@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f4f1e6">
+<meta name="theme-color" content="#26301c">
 <title>Makaron</title>
 <meta name="description" content="Early-harvest, single-origin olive oil from the Edremit Gulf — picked green, pressed cold, lab-tested by the lot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1498,6 +1498,9 @@ input,select,textarea{font:inherit;color:inherit}
     let theme = 'light';
     for (const b of blocks) { const r = b.getBoundingClientRect(); if (r.top <= y && r.bottom > y) { theme = b.dataset.nav; break; } }
     nav.dataset.theme = theme;
+    // tint Safari's status bar / toolbar to match: dark green over the dark sections, cream over the light ones
+    const tc = document.querySelector('meta[name="theme-color"]'); const want = theme === 'dark' ? '#26301c' : '#f4f1e6';
+    if (tc && tc.content !== want) tc.content = want;
     const f = document.querySelector('.TheFooter').getBoundingClientRect();
     const dy = scrollY - navLastY; if (Math.abs(dy) > 3) navDown = dy > 0; navLastY = scrollY;
     nav.classList.remove('is-hidden');   // header is static: it scrolls away with the page

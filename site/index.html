@@ -216,7 +216,7 @@ input,select,textarea{font:inherit;color:inherit}
 .Cascade-title{position:absolute;right:var(--side);bottom:calc(var(--space-xl) + 14rem);font-family:var(--font-display);font-size:var(--fs-poetic);line-height:.95;letter-spacing:-.01em;text-align:right;max-width:7em}
 .Cascade-title .line--b{padding-left:1.2em}
 @media (max-width:60em){.Cascade-item,.Cascade-item--r,.Cascade-item--c{width:88vw;align-self:center;margin:2rem 0 0}.Cascade-title{position:static;text-align:left;margin-top:var(--space-m);max-width:none}}
-.Banner{position:relative;height:100svh;min-height:50rem;color:var(--cream);display:grid;align-items:end;overflow:hidden;background:var(--black);padding:0 var(--side) clamp(5rem,8vh,8rem)}
+.Banner{position:relative;height:100svh;height:100dvh;min-height:50rem;color:var(--cream);display:grid;align-items:end;overflow:hidden;background:var(--black);padding:0 var(--side) clamp(5rem,8vh,8rem)}
 .Banner-title{position:relative;z-index:2;font-family:var(--font-display);font-size:var(--fs-poetic);line-height:.95;text-align:left;max-width:8em;padding:0}
 .Banner-title .line--b{padding-left:1.4em}
 .Banner .Ill.is-cover{z-index:0}
@@ -224,7 +224,7 @@ input,select,textarea{font:inherit;color:inherit}
 
 /* ---- single pinned story canvas (savor mechanism) ---- */
 .StoryCanvas{position:relative;height:1000svh;z-index:2}
-.StoryCanvas-pin{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--cream);color:var(--cream);pointer-events:none;--t:1;--ry:60svh}
+.StoryCanvas-pin{position:sticky;top:0;height:100svh;height:100dvh;overflow:hidden;background:var(--cream);color:var(--cream);pointer-events:none;--t:1;--ry:60svh}
 .StoryCanvas-pin.is-live{pointer-events:auto}
 .StoryCanvas-pin.is-full{background:var(--black)}
 /* the first still rises through the cream as a dome (savor): inset from the top shrinks to 0, the rounded top flattens out */
@@ -299,7 +299,7 @@ input,select,textarea{font:inherit;color:inherit}
 @media (max-width:48em){.HeroVideo-title{grid-column:1/-1}.HeroVideo-side{grid-column:1/-1;margin-top:3rem}.HeroTree{background-position:center bottom;opacity:.45}}
 .Story{position:relative}
 .StoryChapter{position:relative;height:190svh;margin-top:-1px}
-.StoryChapter-pin{position:sticky;top:0;height:100svh;overflow:hidden;color:var(--cream);display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--grid-gap);padding:var(--nav-h) var(--side) 6rem;align-items:center;background:var(--black)}
+.StoryChapter-pin{position:sticky;top:0;height:100svh;height:100dvh;overflow:hidden;color:var(--cream);display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--grid-gap);padding:var(--nav-h) var(--side) 6rem;align-items:center;background:var(--black)}
 .StoryChapter-pin>*{position:relative;z-index:2}
 .StoryChapter-pair{grid-column:2/span 9;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1.6rem;font-size:var(--fs-lead);width:max-content;max-width:100%}
 .StoryChapter-pair .rule{height:1px;background:currentColor;min-width:6rem}

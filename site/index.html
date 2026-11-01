@@ -631,30 +631,6 @@ input,select,textarea{font:inherit;color:inherit}
   .Grid{--grid-gap:1.2rem}
 }
 
-/* ---- phones: full-bleed photos keep the desktop ratio (fit to width) instead of being blown up and cropped ---- */
-@media (max-width:48em){
-  /* story canvas: photo letterboxed on black, text in the bands above and below */
-  .StoryCanvas-pin{background:var(--black)}
-  .StoryCanvas-imgwrap{background:var(--black)}
-  .StoryCanvas-img{object-fit:contain;transform:none!important}
-  .StoryCanvas-scrim{background:rgba(0,0,0,.12)}
-  .SC-layer{padding-top:calc(var(--nav-h) + 1rem);padding-bottom:7vh}
-  .SC-pair{align-content:start}
-  .SC-pair>span{margin-top:0!important}
-  .SC-statement{bottom:7vh}
-  .SC-without{align-content:start;row-gap:1rem}
-  .SC-more{display:grid;grid-template-rows:auto 1fr auto auto;align-content:stretch;row-gap:.6rem}
-  .SC-more .stack:first-of-type{grid-row:1}
-  .SC-more .amp{grid-row:3;margin:0 0 .2rem .1em!important}
-  .SC-more .stack:last-of-type{grid-row:4}
-
-  /* banner video and craft chapters: same treatment */
-  .Banner .Ill-video,.Banner .Ill-photo{object-fit:contain;background:var(--black)}
-  .Chapter{background:#0a120a}
-  .Chapter .Ill.is-cover,.Chapter .Ill.is-cover .Ill-photo{background:#0a120a}
-  .Chapter .Ill.is-cover .Ill-photo{object-fit:contain;object-position:50% 18%}
-  .Chapter-inner{align-content:end;padding-bottom:max(6vh,4rem)}
-}
 </style>
 
 <a class="skip" href="#main">Skip to content</a>

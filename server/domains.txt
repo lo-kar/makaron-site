@@ -1,0 +1,4 @@
+# One hostname per line. The server rebuilds its Caddy config from this file on every sync.
+# "auto" = the server's own <ip-with-dashes>.sslip.io address (no DNS needed).
+# Add makaron.com and www.makaron.com here once their DNS A records point at the server.
+auto

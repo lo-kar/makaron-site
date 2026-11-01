@@ -43,7 +43,7 @@
 
 /* 2. BASE */
 *,*::before,*::after{box-sizing:border-box}
-html{font-size:62.5%;-webkit-text-size-adjust:100%;scrollbar-width:none}
+html{font-size:62.5%;-webkit-text-size-adjust:100%;scrollbar-width:none;background:#26301c}
 html::-webkit-scrollbar{display:none}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-body);line-height:1.45;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 img,video,canvas,svg,picture{display:block;max-width:100%}
@@ -1501,6 +1501,7 @@ input,select,textarea{font:inherit;color:inherit}
     // tint Safari's status bar / toolbar to match: dark green over the dark sections, cream over the light ones
     const tc = document.querySelector('meta[name="theme-color"]'); const want = theme === 'dark' ? '#26301c' : '#f4f1e6';
     if (tc && tc.content !== want) tc.content = want;
+    if (document.documentElement.style.backgroundColor !== want) document.documentElement.style.backgroundColor = want;
     const f = document.querySelector('.TheFooter').getBoundingClientRect();
     const dy = scrollY - navLastY; if (Math.abs(dy) > 3) navDown = dy > 0; navLastY = scrollY;
     nav.classList.remove('is-hidden');   // header is static: it scrolls away with the page

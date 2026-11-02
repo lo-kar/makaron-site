@@ -213,7 +213,7 @@ input,select,textarea{font:inherit;color:inherit}
 .Ev{--k:1}
 @media (max-width:64em){.Ev{--k:1.2}}
 @media (max-width:48em){.Ev{--k:1.15}}
-.Ev-card{position:relative;width:calc(var(--w) * var(--k) * 100%);aspect-ratio:var(--w) / var(--h);overflow:hidden;translate:17.5vw 0;will-change:translate,clip-path;clip-path:inset(-1px 20%)}
+.Ev-card{position:relative;width:calc(var(--w) * var(--k) * 100%);aspect-ratio:var(--w) / var(--h);overflow:hidden;translate:17.5vw 0;will-change:translate;clip-path:inset(-1px 20%)}
 .Ev-img{position:absolute;inset:0;background:var(--sand-deep);will-change:scale;transform-origin:50% 50%;scale:1.75}
 .Ev-img .Ill-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .Ev-img.has-photo::before{display:none}
@@ -221,6 +221,8 @@ input,select,textarea{font:inherit;color:inherit}
 .Ev-text>*{pointer-events:auto}
 .Ev-title{grid-column:8/span 5;font-family:var(--font-display);font-size:var(--fs-poetic);line-height:.95;letter-spacing:-.01em;text-align:left;margin:0}
 .Ev-title .line--b{padding-left:1.2em}
+/* desktop: the title sits in a five-column slot beside the cascade, so it scales with the window and steps in less, keeping "in a single day" on one line */
+@media (min-width:64.0625em){.Ev-title{font-size:min(var(--fs-poetic),6.2vw)}.Ev-title .line--b{padding-left:.6em}}
 .Ev-body{grid-column:9/span 4;margin:3.2rem 0 0;font-size:var(--fs-ui);line-height:1.45;color:var(--ink);opacity:.85}
 .Ev-buttons{grid-column:9/span 4;margin-top:3.2rem}
 @media (max-width:64em){.Ev{padding:var(--space-l) 0 var(--space-l)}.Ev-text{position:static;display:block;padding-top:var(--space-m)}.Ev-title,.Ev-body,.Ev-buttons{grid-column:auto}.Ev-body{max-width:28em}}
@@ -249,7 +251,11 @@ input,select,textarea{font:inherit;color:inherit}
 /* the first still rises through the cream as a dome (savor): inset from the top shrinks to 0, the rounded top flattens out */
 .StoryCanvas-imgwrap,.StoryCanvas-scrim{clip-path:inset(calc(var(--t) * 100%) 0 0 0 round 50% 50% 0 0 / var(--ry) var(--ry) 0 0)}
 .StoryCanvas-imgwrap{position:absolute;inset:0}
-.StoryCanvas-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform}
+.StoryCanvas-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+/* only the still on screen gets its own layer: seven full-screen layers at once is more than iOS Safari keeps in memory */
+.StoryCanvas-img.is-on{will-change:transform}
+.StoryCanvas-imgwrap>picture{display:contents}
+.StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
 .StoryCanvas-img.is-on{opacity:1}
 .StoryCanvas-scrim{position:absolute;inset:0;background:rgba(0,0,0,.30);pointer-events:none}
 .StoryCanvas .Curtain{display:none}
@@ -600,6 +606,14 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
 /* loader: never leave a sliver behind once it has left */
 .Loader.is-done{transform:translateY(-110%)}
 
+/* touch screens: pinned sections take the large viewport (toolbar hidden), which never changes while scrolling,
+   so Safari showing or hiding its toolbar no longer re-lays-out every pinned section mid-scroll */
+@media (hover:none) and (pointer:coarse){
+  @supports (height:100lvh){
+    .StoryCanvas-pin,.StoryChapter-pin,.Banner{height:100lvh}
+  }
+}
+
 /* tap targets on touch screens */
 @media (hover:none) and (pointer:coarse){
   .NavBar-burger,.TheMenu-close,.Film-close,.Consent-actions .Btn,.Pill{min-height:4.4rem}
@@ -814,13 +828,13 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     <div class="StoryCanvas-pin">
       <div class="Curtain" aria-hidden="true"></div>
       <div class="StoryCanvas-imgwrap" aria-hidden="true">
-        <img class="StoryCanvas-img" src="/assets/story-1.jpg?v=16" alt="" data-i="0">
-        <img class="StoryCanvas-img" src="/assets/story-2.jpg?v=16" alt="" data-i="1" loading="lazy">
-        <img class="StoryCanvas-img" src="/assets/story-3.jpg?v=16" alt="" data-i="2" loading="lazy">
-        <img class="StoryCanvas-img" src="/assets/story-4.jpg?v=16" alt="" data-i="3" loading="lazy">
-        <img class="StoryCanvas-img" src="/assets/story-5.jpg?v=16" alt="" data-i="4" loading="lazy">
-        <img class="StoryCanvas-img" src="/assets/story-6.jpg?v=16" alt="" data-i="5" loading="lazy">
-        <img class="StoryCanvas-img" src="/assets/story-7.jpg?v=16" alt="" data-i="6" loading="lazy">
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-1-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-1.jpg?v=16" alt="" data-i="0"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-2-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-2.jpg?v=16" alt="" data-i="1" loading="lazy"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-3-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-3.jpg?v=16" alt="" data-i="2" loading="lazy"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-4-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-4.jpg?v=16" alt="" data-i="3" loading="lazy"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-5-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-5.jpg?v=16" alt="" data-i="4" loading="lazy"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-6-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-6.jpg?v=16" alt="" data-i="5" loading="lazy"></picture>
+        <picture><source media="(max-aspect-ratio: 5/8)" srcset="/assets/story-7-m.jpg?v=1"><img class="StoryCanvas-img" src="/assets/story-7.jpg?v=16" alt="" data-i="6" loading="lazy"></picture>
       </div>
       <div class="StoryCanvas-scrim" aria-hidden="true"></div>
 
@@ -1624,7 +1638,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   const wmReveal = document.getElementById('wmReveal'), wmLogo = document.querySelector('.TheFooter-logo');
   function revealWordmark() {
     if (!wmReveal || !wmLogo) return;
-    const r = wmLogo.getBoundingClientRect(), vh = innerHeight;
+    const r = wmLogo.getBoundingClientRect(), vh = stableVh;
     if (r.top > vh || r.bottom < 0) return;
     // the wipe uses every pixel of scroll that is left: 0 as the wordmark enters, 1 at the very end of the page
     const logoTop = r.top + scrollY, end = document.documentElement.scrollHeight - vh;
@@ -1633,10 +1647,34 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const tx = -340 + p * 1560;                       // −340 → 1220 in the wordmark's 900-unit space
     wmReveal.setAttribute('transform', 'translate(' + tx.toFixed(1) + ' 0)');
   }
-  let ticking = false;
-  window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(() => { setNavTheme(); revealWordmark(); ticking = false; }); ticking = true; } }, { passive: true });
-  window.addEventListener('resize', revealWordmark);
-  window.addEventListener('load', revealWordmark);
+  /* ---- one frame loop: every scroll-driven piece runs at most once per frame, however many scroll events arrive ---- */
+  // a viewport height that ignores Safari's toolbar: progress through pinned sections must not jump when it slides
+  const vhProbe = document.createElement('div');
+  vhProbe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none';
+  document.body.appendChild(vhProbe);
+  let stableVh = vhProbe.offsetHeight || innerHeight, lastW = innerWidth;
+  window.__vh = () => stableVh;
+  let frameQueued = false, connectorDirty = true;
+  function frame() {
+    frameQueued = false;
+    setNavTheme(); revealWordmark();
+    if (typeof driveStory === 'function') driveStory();
+    if (typeof driveCanvas === 'function') driveCanvas();
+    if (typeof driveEv === 'function') driveEv();
+  }
+  function queueFrame() { if (!frameQueued) { frameQueued = true; requestAnimationFrame(frame); } }
+  window.addEventListener('scroll', queueFrame, { passive: true });
+  // a height-only resize on a phone is the toolbar sliding: keep the layout, just redraw; a width change is a real resize
+  window.addEventListener('resize', () => {
+    const widthChanged = innerWidth !== lastW; lastW = innerWidth;
+    if (widthChanged || !matchMedia('(hover:none) and (pointer:coarse)').matches) {
+      stableVh = vhProbe.offsetHeight || innerHeight;
+      if (typeof layoutEv === 'function') layoutEv();
+      connectorDirty = true;
+    }
+    queueFrame();
+  });
+  window.addEventListener('load', () => { if (typeof layoutEv === 'function') layoutEv(); connectorDirty = true; queueFrame(); });
   function openMenu() { menu.classList.add('is-open'); menu.setAttribute('aria-hidden', 'false'); document.documentElement.classList.add('is-menu-open'); if (window.__lenis) window.__lenis.stop(); }
   function closeMenu() { menu.classList.remove('is-open'); menu.setAttribute('aria-hidden', 'true'); document.documentElement.classList.remove('is-menu-open'); if (window.__lenis) window.__lenis.start(); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('is-open')) closeMenu(); });
@@ -1707,17 +1745,19 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   }
   function driveEv() {
     if (!ev || ev.closest('.Page').hidden) return;
-    const L = innerHeight, vw = innerWidth;
+    const L = stableVh, vw = innerWidth;
+    const er = ev.getBoundingClientRect();
+    if (er.bottom < -L * 0.5 || er.top > L * 1.5) return;       // nowhere near the screen: nothing to move
     // phones: same direction and swing as desktop, but a triangle wave instead of a sine, so every frame steps
     // the same ~25px from its neighbour (a sine leaves near-zero steps at its turns, which read as misalignment),
     // and frames of different widths share one centre line so the tapering tail stays on the path
     const phone = vw < 768, freq = phone ? 6 : 3, dir = 1;
     const wave = v => phone ? 1 - Math.abs(((v / Math.PI) % 2 + 2) % 2 - 1) : Math.sin(v) * .5 + .5;
-    const maxW = phone ? Math.max(...evCards.map(c => c.offsetWidth)) : 0;
-    const er = ev.getBoundingClientRect();
+    const widths = evCards.map(c => c.offsetWidth), maxW = phone ? Math.max(...widths) : 0;
     const an = smooth((L - er.top) / (er.height + L)) * dir;      // section progress, eased
-    evCards.forEach(card => {
-      const r = card.getBoundingClientRect();
+    const rects = evCards.map(c => c.getBoundingClientRect());     // all reads first, then all writes: one layout per frame
+    evCards.forEach((card, ci) => {
+      const r = rects[ci];
       const lt = r.top, yt = r.height;
       const img = card.firstElementChild;
       const u = clamp01((L - lt) / (L + yt));
@@ -1726,15 +1766,12 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       const scale = 1.75 + pt * (1 - 1.75);
       img.style.scale = scale.toFixed(4);
       const tp = clamp01((L - lt) / (1.5 * L));
-      const x = wave((an + tp) * freq) * vw * (phone ? .3 : .35) + (phone ? (maxW - card.offsetWidth) / 2 : 0);
+      const x = wave((an + tp) * freq) * vw * (phone ? .3 : .35) + (phone ? (maxW - widths[ci]) / 2 : 0);
       const clip = smooth(1 - ot) * 0.4 * 50;
       card.style.translate = x.toFixed(1) + 'px 0px';
       card.style.clipPath = 'inset(-1px ' + clip.toFixed(2) + '%)';
     });
   }
-  window.addEventListener('scroll', () => requestAnimationFrame(driveEv), { passive: true });
-  window.addEventListener('resize', () => { layoutEv(); driveEv(); });
-  window.addEventListener('load', () => { layoutEv(); driveEv(); });
   layoutEv();
 
 
@@ -1757,7 +1794,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   const sc = document.getElementById('storyCanvas');
   function driveCanvas() {
     if (!sc || sc.closest('.Page').hidden) return;
-    const r = sc.getBoundingClientRect(), vh = innerHeight;
+    const r = sc.getBoundingClientRect(), vh = stableVh;
+    if (r.bottom < -vh || r.top > vh * 2) return;                 // well off screen: leave it as it is
     const total = Math.max(1, sc.offsetHeight - vh);
     const pin = sc.firstElementChild;
     // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
@@ -1777,8 +1815,10 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       im.classList.toggle('is-on', i === active);
       if (i === active) { const local = (q - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i]); im.style.transform = 'translateY(' + (-local * 6) + 'vh) scale(1.14)'; }
     });
+    const pairEl = sc.querySelector('.SC-pair'), pairWasOn = pairEl && pairEl.classList.contains('is-on');
     sc.querySelectorAll('.SC-layer').forEach(l => l.classList.toggle('is-on', p >= +l.dataset.from && p < +l.dataset.to));
-    placeConnector();
+    // the curve depends on layout only, so it is measured when the pair appears or after a real resize, not every frame
+    if (pairEl && pairEl.classList.contains('is-on') && (!pairWasOn || connectorDirty)) { placeConnector(); connectorDirty = false; }
     sc.querySelectorAll('.SC-layer').forEach(l => { const on = l.classList.contains('is-on'); l.querySelectorAll('.SC-build').forEach(b => b.classList.toggle('is-on', on && (reduce || p >= +b.dataset.at))); });
   }
   // the dash line runs from just after "to its tin" down to the first word of the statement
@@ -1800,13 +1840,15 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     line.style.left = (flip ? x1 : x0).toFixed(0) + 'px'; line.style.top = y0.toFixed(0) + 'px';
     line.style.width = wpx.toFixed(0) + 'px'; line.style.height = Math.max(40, y1 - y0).toFixed(0) + 'px';
   }
-  window.addEventListener('scroll', () => requestAnimationFrame(driveCanvas), { passive: true });
-  window.addEventListener('resize', driveCanvas);
+  // decode every still ahead of time, so a hard cut never waits on a 2560px JPEG
+  if (sc) window.addEventListener('load', () => {
+    sc.querySelectorAll('.StoryCanvas-img').forEach(im => { im.loading = 'eager'; if (im.decode) im.decode().catch(() => {}); });
+  });
 
   /* ---- scroll-driven story: progress 0→1 per pinned chapter drives builds, parallax, mask and scrub ---- */
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function driveStory() {
-    const vh = innerHeight;
+    const vh = stableVh;
     document.querySelectorAll('.Page:not([hidden]) .StoryChapter').forEach(ch => {
       const r = ch.getBoundingClientRect();
       const total = Math.max(1, ch.offsetHeight - vh);
@@ -1826,9 +1868,6 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       else if (!v.paused) v.pause();
     });
   }
-  let storyTick = false;
-  window.addEventListener('scroll', () => { if (!storyTick) { requestAnimationFrame(() => { driveStory(); storyTick = false; }); storyTick = true; } }, { passive: true });
-  window.addEventListener('resize', driveStory);
   document.querySelectorAll('.StoryChapter[data-scrub] video').forEach(v => { v.removeAttribute('autoplay'); v.preload = 'auto'; });
 
   /* ---- film modal ---- */

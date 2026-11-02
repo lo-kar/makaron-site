@@ -213,9 +213,12 @@ class Markdown(HTMLParser):
             if tag == 'br':
                 self.buf.append(' ')
             return
-        hide = self.skip_depth or tag in self.SKIP or 'hidden' in a or a.get('aria-hidden') == 'true' \
+        if self.skip_depth:                      # inside a hidden subtree: track nesting only
+            self.stack.append((tag, False))
+            return
+        hide = tag in self.SKIP or 'hidden' in a or a.get('aria-hidden') == 'true' \
             or any(c in (a.get('class') or '') for c in ('Pills', 'Journal-filters', 'NextArticle', 'Loader'))
-        self.stack.append((tag, bool(hide) and not self.skip_depth))
+        self.stack.append((tag, bool(hide)))
         if hide:
             self.skip_depth += 1
             return

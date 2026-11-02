@@ -212,7 +212,7 @@ input,select,textarea{font:inherit;color:inherit}
 .Ev-cards{display:flex;flex-direction:column;align-items:flex-start}
 .Ev{--k:1}
 @media (max-width:64em){.Ev{--k:1.2}}
-@media (max-width:48em){.Ev{--k:1.3}}
+@media (max-width:48em){.Ev{--k:1.15}}
 .Ev-card{position:relative;width:calc(var(--w) * var(--k) * 100%);aspect-ratio:var(--w) / var(--h);overflow:hidden;translate:17.5vw 0;will-change:translate,clip-path;clip-path:inset(-1px 20%)}
 .Ev-img{position:absolute;inset:0;background:var(--sand-deep);will-change:scale;transform-origin:50% 50%;scale:1.75}
 .Ev-img .Ill-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -692,9 +692,12 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   /* entry-point cascade text: title steps in on its second line, the body sits one column in, as on desktop */
   .Ev-body,.Ev-buttons{margin-left:16%}
 
-  /* shop and oils: two columns, the second one dropped, like the desktop row of four */
+  /* shop and oils: two aligned columns, like the desktop row of four; every price block reserves room for the
+     spec line some products have, so prices and buttons line up across each row */
   .Shop-list,.ProductGrid-list:not(.ProductGrid-list--one){grid-template-columns:repeat(2,1fr);column-gap:1.2rem;row-gap:4rem}
-  .Shop-item:nth-child(2n),.ProductGrid-item:nth-child(2n){margin-top:5rem}
+  .Shop-item:nth-child(n),.ProductGrid-item:nth-child(n){margin-top:0}
+  .Shop-price{display:block;min-height:3.6rem;line-height:1.25}
+  .Shop-price small{margin-top:.4rem}
   .Shop-name{font-size:clamp(1.9rem,5.4vw,2.4rem)}
   .Shop-desc{font-size:1.3rem}
   .Shop-row{flex-direction:column;align-items:stretch;gap:1.2rem}
@@ -1702,7 +1705,12 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   function driveEv() {
     if (!ev || ev.closest('.Page').hidden) return;
     const L = innerHeight, vw = innerWidth;
-    const freq = 3, dir = 1;                                         // the same wave on every screen size, phones included
+    // phones: same direction and swing as desktop, but a triangle wave instead of a sine, so every frame steps
+    // the same ~25px from its neighbour (a sine leaves near-zero steps at its turns, which read as misalignment),
+    // and frames of different widths share one centre line so the tapering tail stays on the path
+    const phone = vw < 768, freq = phone ? 6 : 3, dir = 1;
+    const wave = v => phone ? 1 - Math.abs(((v / Math.PI) % 2 + 2) % 2 - 1) : Math.sin(v) * .5 + .5;
+    const maxW = phone ? Math.max(...evCards.map(c => c.offsetWidth)) : 0;
     const er = ev.getBoundingClientRect();
     const an = smooth((L - er.top) / (er.height + L)) * dir;      // section progress, eased
     evCards.forEach(card => {
@@ -1715,7 +1723,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       const scale = 1.75 + pt * (1 - 1.75);
       img.style.scale = scale.toFixed(4);
       const tp = clamp01((L - lt) / (1.5 * L));
-      const x = (Math.sin((an + tp) * freq) * .5 + .5) * vw * .35;
+      const x = wave((an + tp) * freq) * vw * (phone ? .3 : .35) + (phone ? (maxW - card.offsetWidth) / 2 : 0);
       const clip = smooth(1 - ot) * 0.4 * 50;
       card.style.translate = x.toFixed(1) + 'px 0px';
       card.style.clipPath = 'inset(-1px ' + clip.toFixed(2) + '%)';

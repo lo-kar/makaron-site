@@ -1,0 +1,50 @@
+# Makaron
+
+> Early-harvest, cold-extracted extra virgin olive oil from one grove on Turkey's Edremit Gulf. Picked green, milled the same day, lab-tested by the lot and sealed in light-proof tins.
+
+Makaron is an early-harvest, single-origin extra virgin olive oil from one grove of Edremit (Ayvalık) olive trees on the Edremit Gulf in the north Aegean, Türkiye. It is sold in the UK by Metrics34 UK Limited.
+
+## Key facts
+
+- Certificate of analysis: Lot M-2026-07
+- Free acidity (oleic): <0.8 %
+- Total polyphenols: 452 mg/kg
+- Peroxide value: 6.1 meq O₂/kg
+- Olive variety: Edremit · 100%
+- Harvest window: October 2026
+- Extraction: Cold · <27°C
+- Packaging: light-proof tins
+- Contact: hello@makaron.com · Instagram @makaronoliveoil
+
+## Products and prices (GBP)
+
+- 500 ml tin — £24.99: The everyday tin. Early harvest, cold extracted, this year's lot.
+- Gift set — £119.99: A 2.5 L tin to keep in the dark, and a refillable glass bottle for the table.
+- 2.5 L tin — £89.99: For kitchens that cook with it every day. The best value per litre.
+- 18 × 500 ml — £359.99: Eighteen everyday tins from one lot — for the pantry, or for eighteen people you like.
+
+## Pages
+
+- [Makaron — Early-harvest single-origin olive oil from the Edremit Gulf](https://makaron.com/): Early-harvest, cold-extracted extra virgin olive oil from one grove on Turkey's Edremit Gulf. Picked green, milled the same day, lab-tested by the lot and sealed in light-proof tins.
+- [Craft — Picked green, extracted cold](https://makaron.com/craft/): How Makaron is made: olives picked green at their polyphenol peak, milled the same day by cold extraction below 27°C, and every lot lab-tested before it fills a tin.
+- [Our oils — 2026 early-harvest extra virgin olive oil](https://makaron.com/oils/): The 2026 early-harvest lot: grassy and green, with artichoke and a peppery finish. Under 0.8% acidity, 452 mg/kg polyphenols, 100% Edremit olives, in 500 ml and 2.5 L tins.
+- [At the table — How to use early-harvest olive oil](https://makaron.com/at-the-table/): How to use a green, early-harvest olive oil: raw over food, in salads and for everyday cooking — and how to store it so it keeps its peppery finish.
+- [The grove — Edremit Gulf, Türkiye](https://makaron.com/grove/): One 120-acre grove of Edremit olive trees between the Kozak mountains and the Edremit Gulf, pressed on this land since 1864. No blending, no bought-in fruit.
+- [Journal — Notes on olive oil](https://makaron.com/journal/): Notes on buying, storing and tasting olive oil, and on each harvest at our grove on the Edremit Gulf.
+- [Terms of sale](https://makaron.com/terms/): Terms of sale for Makaron olive oil, sold by Metrics34 UK Limited.
+- [Privacy policy](https://makaron.com/privacy/): How Metrics34 UK Limited collects, uses and protects personal data through the Makaron website.
+- [Contact](https://makaron.com/contact/): Join the harvest list, place an order, or ask about trade and catering. We read every message.
+
+## Journal
+
+- [Inside the 2026 pressing, week by week](https://makaron.com/journal/inside-the-2026-pressing/) (2026-10-28): A week-by-week account of the 2026 harvest at our Edremit grove: picking from early October, every crate milled the day it is picked.
+- [How to read an olive oil label — and the one word that predicts quality](https://makaron.com/journal/how-to-read-an-olive-oil-label/) (2026-10-12): “Extra virgin” is a floor, not a grade. Why the harvest date, free acidity and polyphenol figures tell you more about an olive oil than anything else on the label.
+- [Polyphenols, explained in a paragraph](https://makaron.com/journal/polyphenols-explained/) (2026-09-28): What olive oil polyphenols are, why green fruit carries the most, and why the peppery catch at the back of the throat is a good sign.
+- [Why we sell oil in tin, not glass](https://makaron.com/journal/why-tin-not-glass/) (2026-09-14): Light and oxygen are what age olive oil, and tin shuts both out. Why we pack in tin rather than glass, and how to decant at home.
+- [Acidity, and what the number really tells you](https://makaron.com/journal/olive-oil-acidity-explained/) (2026-08-18): Free acidity is free fatty acid content, not sourness. What the number means, what makes it rise, and why under 0.8% is only the starting line.
+- [Early vs late harvest: a tasting](https://makaron.com/journal/early-vs-late-harvest-tasting/) (2026-08-04): Early oil is green, bright and peppery; late oil is soft, ripe and buttery. A side-by-side tasting, and why we only make the early one.
+- [The Edremit olive, and why it suits this coast](https://makaron.com/journal/the-edremit-olive/) (2026-07-20): The Edremit (Ayvalık) olive is native to Turkey's north Aegean coast: a small, oil-rich fruit that gives a fruity, balanced, gently peppery oil.
+
+## Optional
+
+- [Full text of every page](https://makaron.com/llms-full.txt)

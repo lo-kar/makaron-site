@@ -64,7 +64,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 - **CSS**:
   - Design tokens are on `:root`: `--cream`, `--brown`, `--black`, `--fs-*`, `--space-*`.
   - Desktop rules come first, then the mobile refinements.
-  - The **PHONE PARITY** block is last and wins. It gives phones the desktop compositions instead of stacked columns: offset title lines, side-by-side story text, two-column staggered shop/product/journal grids.
+  - The **PHONE LAYOUT** block is last and wins. On phones every text block, photo and button starts at the side gutter: no offset columns and no stepped second title lines, because those read as misalignment on a narrow screen. Phones keep the desktop's components (story canvas, cascade, two-column shop/product/journal grids).
 - **JS** is one vanilla `<script>`. The only external dependency is Lenis (`lenis@1.1.18` from jsDelivr). The menu carries `data-lenis-prevent` and stops Lenis while it is open. Modules:
   - loader and router (above);
   - the home "story canvas": pinned, scroll-driven stills and text layers, with an SVG connector placed by `placeConnector()` from measured layout boxes;

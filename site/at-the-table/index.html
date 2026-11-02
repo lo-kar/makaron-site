@@ -657,9 +657,10 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
 }
 
 /* ============================================================
-   PHONE PARITY — phones get the desktop compositions (offset title lines, side-by-side story text,
-   two-column product and journal grids) re-proportioned for a narrow screen, not a plain stacked column.
-   Ordered last so it wins over the stacking rules above.
+   PHONE LAYOUT — one left edge. Every text block, photo and button on a phone starts at the side gutter;
+   the desktop's offset columns and stepped title lines read as misalignment on a narrow screen, so phones keep
+   the desktop's components (story canvas, cascade, two-column grids) but not its offsets.
+   Ordered last so it wins over the rules above.
    ============================================================ */
 @media (max-width:60em){
   /* journal: two staggered columns, like the desktop's three */
@@ -672,25 +673,32 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   .SC-pair span:first-child{grid-column:1;grid-row:1}
   .SC-pair .rule{grid-column:2;grid-row:1;width:auto;justify-self:stretch;margin-top:calc(14vh + .75em)}
   .SC-pair span:nth-child(3){grid-column:3;grid-row:1;margin-top:14vh}
-  .SC-statement{left:auto;right:var(--side);width:15em;max-width:calc(100% - 2 * var(--side));bottom:14vh;white-space:normal}
-  /* scene 2: "Without" beside its list, both a little in from the left as on desktop */
-  .SC-without{grid-template-columns:max-content 1fr;column-gap:1.6rem;align-content:center;padding-left:calc(var(--side) + 6vw)}
+  .SC-statement{left:var(--side);right:var(--side);width:auto;justify-self:start;bottom:14vh;white-space:normal}
+  /* scene 2: "Without" beside its list */
+  .SC-without{grid-template-columns:max-content 1fr;column-gap:1.6rem;align-content:center}
   .SC-without>span{grid-column:1;grid-row:1;align-self:center}
   .SC-without ul{grid-column:2;grid-row:1}
-  /* scene 3: first stack, then "&" leading into the second, stepped to the right */
+  /* scene 3: first stack, then "&" leading into the second */
   .SC-more{grid-template-columns:max-content 1fr;column-gap:1.6rem;row-gap:2.4rem}
   .SC-more .stack:first-of-type{grid-column:1/-1;grid-row:1}
-  .SC-more .amp{grid-column:1;grid-row:2;align-self:center;margin:0 0 0 calc(6vw + .1em);font-size:var(--fs-poetic)}
+  .SC-more .amp{grid-column:1;grid-row:2;align-self:center;margin:0;font-size:var(--fs-poetic)}
   .SC-more .stack:last-of-type{grid-column:2;grid-row:2;align-self:center}
 
-  /* outro: line A, the photo set to the right, line B stepped in beneath it, the note under the photo */
-  .Outro-lineA{grid-column:1/-1;grid-row:1}
-  .Outro-media{grid-column:4/-1;grid-row:2;aspect-ratio:4/5;margin:2.4rem 0 0}
-  .Outro-lineB{grid-column:1/-1;grid-row:3;padding-left:.9em;margin-top:.25em;z-index:2}
-  .Outro-text{grid-column:4/-1;grid-row:4;margin-top:2.4rem}
+  /* hero: line and button under the title, on the same left edge */
+  .HeroVideo-side{align-items:flex-start;justify-self:start}
+  .HeroVideo-desc{text-align:left}
 
-  /* entry-point cascade text: title steps in on its second line, the body sits one column in, as on desktop */
-  .Ev-body,.Ev-buttons{margin-left:16%}
+  /* outro: the two title lines read as one headline, then the photo full width, then the note */
+  .Outro-lineA{grid-column:1/-1;grid-row:1}
+  .Outro-lineB{grid-column:1/-1;grid-row:2;padding-left:0;margin-top:.05em}
+  .Outro-media{grid-column:1/-1;grid-row:3;aspect-ratio:4/5;margin:3.2rem 0 0}
+  .Outro-text{grid-column:1/-1;grid-row:4;margin-top:2.4rem;max-width:none}
+
+  /* entry-point cascade text: body and button on the title's left edge */
+  .Ev-body,.Ev-buttons{margin-left:0}
+
+  /* stepped second title lines become plain left-aligned lines */
+  .Shop-title .line--b,.Ev-title .line--b,.Banner-title .line--b,.Cascade-title .line--b{padding-left:0}
 
   /* shop and oils: two aligned columns, like the desktop row of four; every price block reserves room for the
      spec line some products have, so prices and buttons line up across each row */
@@ -703,11 +711,6 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   .Shop-row{flex-direction:column;align-items:stretch;gap:1.2rem}
   .Shop-row .Btn{justify-content:center;width:100%}
   .PriceCap{flex-direction:column;gap:.2rem}
-}
-@media (max-width:30em){
-  /* keep the desktop's stepped second lines */
-  .Shop-title .line--b,.Ev-title .line--b{padding-left:1.2em}
-  .Banner-title .line--b{padding-left:1em}
 }
 
 </style>
@@ -1788,8 +1791,10 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const x0 = pr.left + tinEl.offsetLeft + tinEl.offsetWidth - pin.left + 14, y0 = pr.top + tinEl.offsetTop + tinEl.offsetHeight - pin.top + 2;
     const lh = parseFloat(getComputedStyle(st).lineHeight) || 28;
     const stR = st.getBoundingClientRect();
-    const x1 = (stR.width ? stR.left - pin.left : pin.width * 0.58) - 18;
-    const y1 = (stR.height ? stR.top - pin.top : pin.height - innerHeight * 0.20 - lh * 2) + lh * 0.5;
+    let x1 = (stR.width ? stR.left - pin.left : pin.width * 0.58) - 18;
+    let y1 = (stR.height ? stR.top - pin.top : pin.height - innerHeight * 0.20 - lh * 2) + lh * 0.5;
+    // phones: the statement sits on the left gutter, so the line lands just above its first word instead of beside it
+    if (innerWidth < 768 && stR.height) { x1 = stR.left - pin.left + 6; y1 = stR.top - pin.top - 10; }
     const flip = x1 < x0, wpx = Math.max(24, Math.abs(x1 - x0));
     line.querySelector('path').setAttribute('d', flip ? 'M100 0 C 100 58, 0 42, 0 100' : 'M0 0 C 0 58, 100 42, 100 100');
     line.style.left = (flip ? x1 : x0).toFixed(0) + 'px'; line.style.top = y0.toFixed(0) + 'px';

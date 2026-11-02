@@ -1705,9 +1705,12 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   function driveEv() {
     if (!ev || ev.closest('.Page').hidden) return;
     const L = innerHeight, vw = innerWidth;
-    // same direction and swing as desktop; phones run it faster because their frames are a third of the height,
-    // so neighbouring frames step by a clear ~40px instead of drifting a few pixels out of line
-    const freq = vw < 768 ? 6 : 3, dir = 1;
+    // phones: same direction and swing as desktop, but a triangle wave instead of a sine, so every frame steps
+    // the same ~25px from its neighbour (a sine leaves near-zero steps at its turns, which read as misalignment),
+    // and frames of different widths share one centre line so the tapering tail stays on the path
+    const phone = vw < 768, freq = phone ? 6 : 3, dir = 1;
+    const wave = v => phone ? 1 - Math.abs(((v / Math.PI) % 2 + 2) % 2 - 1) : Math.sin(v) * .5 + .5;
+    const maxW = phone ? Math.max(...evCards.map(c => c.offsetWidth)) : 0;
     const er = ev.getBoundingClientRect();
     const an = smooth((L - er.top) / (er.height + L)) * dir;      // section progress, eased
     evCards.forEach(card => {
@@ -1720,7 +1723,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       const scale = 1.75 + pt * (1 - 1.75);
       img.style.scale = scale.toFixed(4);
       const tp = clamp01((L - lt) / (1.5 * L));
-      const x = (Math.sin((an + tp) * freq) * .5 + .5) * vw * .35;
+      const x = wave((an + tp) * freq) * vw * (phone ? .3 : .35) + (phone ? (maxW - card.offsetWidth) / 2 : 0);
       const clip = smooth(1 - ot) * 0.4 * 50;
       card.style.translate = x.toFixed(1) + 'px 0px';
       card.style.clipPath = 'inset(-1px ' + clip.toFixed(2) + '%)';

@@ -253,7 +253,7 @@ input,select,textarea{font:inherit;color:inherit}
 .StoryCanvas-imgwrap{position:absolute;inset:0;isolation:isolate}  /* keeps the stills' z-index below the scrim and text */
 .StoryCanvas-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
 /* only the still on screen gets its own layer: seven full-screen layers at once is more than iOS Safari keeps in memory */
-.StoryCanvas-img.is-on{will-change:transform}
+.StoryCanvas-img.is-on{will-change:transform,opacity}
 .StoryCanvas-imgwrap>picture{display:contents}
 /* touch screens, as on savor mobile: 900 large-viewport heights, a contained pin, and nothing on a timer: stills,
    text and lines are all scrubbed by the scroll position in driveCanvas */
@@ -1804,6 +1804,17 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   /* ---- single pinned story canvas ---- */
   const sc = document.getElementById('storyCanvas');
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  // savor's smoother (decel .5, accel .15) with a per-frame speed cap; keeps asking for frames until it has caught up
+  const scSmooth = { cur: -1, vel: 0 };
+  function smoothP(target) {
+    if (scSmooth.cur < 0 || Math.abs(target - scSmooth.cur) > 0.15 || reduce) { scSmooth.cur = target; scSmooth.vel = 0; return target; }
+    scSmooth.vel = (scSmooth.vel + (target - scSmooth.cur) * 0.15) * 0.5;
+    scSmooth.vel = Math.max(-0.012, Math.min(0.012, scSmooth.vel));
+    scSmooth.cur += scSmooth.vel;
+    if (Math.abs(target - scSmooth.cur) < 5e-5 && Math.abs(scSmooth.vel) < 5e-6) { scSmooth.cur = target; scSmooth.vel = 0; }
+    else queueFrame();
+    return scSmooth.cur;
+  }
   const scRule = sc && sc.querySelector('.SC-pair .rule'), scCurve = sc && sc.querySelector('.SC-pair .Connector');
   function driveCanvas() {
     if (!sc || sc.closest('.Page').hidden) return;
@@ -1816,8 +1827,11 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
     pin.style.setProperty('--t', t.toFixed(4));
     pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
-    const p = Math.min(1, Math.max(0, -r.top / total));
-    pin.classList.toggle('is-live', p > 0);
+    const rawP = Math.min(1, Math.max(0, -r.top / total));
+    // touch: the page scrolls natively, the story's animations follow a smoothed copy of the progress (savor's
+    // velocity-capped smoother), so a fast flick plays the scenes through instead of skipping them
+    const p = scTouch ? smoothP(rawP) : rawP;
+    pin.classList.toggle('is-live', rawP > 0);
     pin.classList.toggle('is-full', t === 0);
     const imgs = sc.querySelectorAll('.StoryCanvas-img'), n = imgs.length;
     const cuts = [0, 0.14, 0.28, 0.44, 0.60, 0.74, 0.88];
@@ -1972,13 +1986,13 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     if (stored) applyConsent(stored); else setTimeout(() => showConsent(false), 1800);
   }
 
-  /* ---- smooth inertial scroll (Lenis), as on savor ----
-     syncTouch: on phones Lenis takes the finger over too and eases the scroll frame by frame, as savor does, so the
-     scroll-driven story moves continuously instead of jumping with native momentum. The page has no CSS hooked to
-     Lenis's classes, so it is not allowed to rewrite <html>'s class on every scroll start and stop (each rewrite
-     restyles the whole single-page document). */
-  if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const lenis = new Lenis({ lerp: 0.09, smoothWheel: true, syncTouch: true, syncTouchLerp: 0.08, touchInertiaMultiplier: 30 });
+  /* ---- smooth inertial scroll (Lenis), as on savor: mouse wheels and trackpads only ----
+     Phones keep the browser's own scrolling, which tracks the finger 1:1 at the screen's full refresh rate; taking the
+     finger over (syncTouch) made the page trail behind it and feel heavy on iPhones. The story canvas smooths its own
+     animation progress instead (see smoothP). The page has no CSS hooked to Lenis's classes, so it is not allowed to
+     rewrite <html>'s class on every scroll start and stop (each rewrite restyles the whole single-page document). */
+  if (window.Lenis && !matchMedia('(hover: none) and (pointer: coarse)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
     lenis.updateClassName = () => {}; lenis.cleanUpClassName = () => {};
     function raf(t) { lenis.raf(t); requestAnimationFrame(raf); } requestAnimationFrame(raf);
     window.__lenis = lenis;

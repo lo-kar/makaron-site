@@ -1924,8 +1924,12 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     if (stored) applyConsent(stored); else setTimeout(() => showConsent(false), 1800);
   }
 
-  /* ---- smooth inertial scroll (Lenis), as on savor ---- */
-  if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  /* ---- smooth inertial scroll (Lenis), as on savor: mouse wheels and trackpads only ----
+     On touch screens Lenis leaves scrolling to the browser anyway, but it still rewrites <html>'s class at the start
+     and 400ms after the end of every flick, and a class change on <html> restyles the whole single-page document:
+     on iPhones that was a hitch at the start of each scroll. */
+  const touchOnly = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  if (window.Lenis && !touchOnly && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
     function raf(t) { lenis.raf(t); requestAnimationFrame(raf); } requestAnimationFrame(raf);
     window.__lenis = lenis;
@@ -1933,6 +1937,22 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.addEventListener('popstate', route);
   window.addEventListener('hashchange', () => { if (pathFor(location.hash.slice(1))) route(); });
+  // ?fps on any URL: a small meter for checking scroll smoothness on a real phone (frames over 20ms, worst frame)
+  if (/[?&]fps\b/.test(location.search)) {
+    const m = document.createElement('div');
+    m.style.cssText = 'position:fixed;left:8px;top:calc(env(safe-area-inset-top) + 64px);z-index:99;font:600 12px/1.3 ui-monospace,monospace;background:rgba(0,0,0,.75);color:#fff;padding:6px 8px;border-radius:6px;pointer-events:none;white-space:pre';
+    document.body.appendChild(m);
+    let last = performance.now(), frames = 0, slow = 0, worst = 0, windowStart = last;
+    (function tick(t) {
+      const dt = t - last; last = t; frames++;
+      if (dt > 20) slow++; if (dt > worst) worst = dt;
+      if (t - windowStart > 1000) {
+        m.textContent = Math.round(frames * 1000 / (t - windowStart)) + ' fps\nslow ' + slow + '/' + frames + '\nworst ' + Math.round(worst) + 'ms';
+        frames = slow = 0; worst = 0; windowStart = t;
+      }
+      requestAnimationFrame(tick);
+    })(last);
+  }
   // internal links switch pages in place (no reload), so the loader, videos and smooth scroll keep their flow
   document.addEventListener('click', e => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;

@@ -259,13 +259,18 @@ input,select,textarea{font:inherit;color:inherit}
 @media (hover:none) and (pointer:coarse){
   .StoryCanvas{height:900lvh}
   .StoryCanvas .StoryCanvas-pin{contain:content}
-  /* the dome, without clip-path (iOS repaints a full-screen clip-path every frame): a fixed rounded window taller than
-     the screen by its curve slides up with transform while its content slides down by the same amount, so the photo
-     stays put and nothing is repainted; once it has risen, the curve is above the top edge and the edge is flat */
+  /* the dome moves with the page itself, at exactly the speed of the finger: the pin is taller than the screen by a
+     cream band (--scG) plus the dome's curve (--scR) and sticks that much above the top edge, so the band and the curve
+     scroll up natively and are off screen by the time it pins. Nothing about the dome is set from script (a transform
+     set from scroll is a frame behind iOS's scrolling and reads as the dome running at its own pace) */
+  .StoryCanvas{--scG:10lvh;--scR:30lvh}
+  .StoryCanvas .StoryCanvas-pin{top:calc(-1 * (var(--scG) + var(--scR)));height:calc(100lvh + var(--scG) + var(--scR))}
   .StoryCanvas .StoryCanvas-imgwrap,.StoryCanvas .StoryCanvas-scrim{clip-path:none}
-  .StoryCanvas-dome{position:absolute;left:0;right:0;top:calc(-1 * var(--domeR,30svh));height:calc(100% + var(--domeR,30svh));
-    border-radius:50% 50% 0 0 / var(--domeR,30svh) var(--domeR,30svh) 0 0;overflow:hidden;will-change:transform;transform:translate3d(0,100lvh,0)}
-  .StoryCanvas-domein{position:absolute;left:0;right:0;top:var(--domeR,30svh);bottom:0;will-change:transform}
+  .StoryCanvas-dome{position:absolute;left:0;right:0;top:var(--scG);bottom:0;
+    border-radius:50% 50% 0 0 / var(--scR) var(--scR) 0 0;overflow:hidden;transform:translateZ(0)}
+  .StoryCanvas-domein{position:absolute;inset:0}
+  /* text keeps to the screen-sized part at the bottom of the pin */
+  .StoryCanvas .SC-layer:not(.SC-statement){top:calc(var(--scG) + var(--scR))}
   .StoryCanvas .SC-build,.StoryCanvas .SC-layer{transition:none}
 }
 .StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
@@ -1811,7 +1816,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   const sc = document.getElementById('storyCanvas');
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
   // touch: wrap the stills and the scrim in the composited dome (see the .StoryCanvas-dome rule)
-  let scDome = null, scDomeIn = null, scDomeR = 0;
+  let scDome = null, scDomeIn = null;
   if (sc && scTouch) {
     const iw = sc.querySelector('.StoryCanvas-imgwrap'), sr = sc.querySelector('.StoryCanvas-scrim');
     scDome = document.createElement('div'); scDome.className = 'StoryCanvas-dome'; scDome.setAttribute('aria-hidden', 'true');
@@ -1838,27 +1843,24 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const pin = sc.firstElementChild;
     // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
     const s = (vh - r.top) / vh;
-    // phones rise it a little sooner (1.25 instead of 0.8): the cream gap below the hero is ~20% shorter
-    const t = Math.min(1, Math.max(0, 1 - (scTouch ? 1.25 : 0.8) * Math.max(0, s)));
-    if (scDome) {
-      const R = Math.round(vh * 0.3);
-      if (R !== scDomeR) { scDomeR = R; scDome.style.setProperty('--domeR', R + 'px'); }
-      const T = (t * (vh + R)).toFixed(1);
-      scDome.style.transform = 'translate3d(0,' + T + 'px,0)';
-      scDomeIn.style.transform = 'translate3d(0,-' + T + 'px,0)';
-    } else {
+    const t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
+    if (!scDome) {
       pin.style.setProperty('--t', t.toFixed(4));
       pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
     }
-    const rawP = Math.min(1, Math.max(0, -r.top / total));
+    // touch: the pin sticks H above the top edge (the cream band and the dome's curve, see the CSS), so the story's
+    // progress counts from the moment it pins, and runs negative while the dome is still rising
+    const H = scDome ? Math.max(0, pin.offsetHeight - vh) : 0;
+    const rt = r.top + H, span = Math.max(1, total - H);
+    const rawP = Math.min(1, Math.max(0, -rt / span));
     // touch: the page scrolls natively, the story's animations follow a smoothed copy of the progress (savor's
     // velocity-capped smoother), so a fast flick plays the scenes through instead of skipping them. On touch the
     // progress also runs slightly negative while the dome is still rising, so the text can start before the pin
     // (see the touch branch below)
-    const pe = scTouch ? smoothP(Math.min(1, Math.max(-0.2, -r.top / total))) : rawP;
+    const pe = scTouch ? smoothP(Math.min(1, Math.max(-0.2, -rt / span))) : rawP;
     const p = Math.max(0, pe);
     pin.classList.toggle('is-live', rawP > 0);
-    pin.classList.toggle('is-full', t === 0);
+    pin.classList.toggle('is-full', scDome ? rt <= 0 : t === 0);
     const imgs = sc.querySelectorAll('.StoryCanvas-img'), n = imgs.length;
     const cuts = [0, 0.14, 0.28, 0.44, 0.60, 0.74, 0.88];
     const seg = (a, b) => reduce ? 1 : clamp01((p - a) / (b - a));
@@ -1872,7 +1874,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       // the text runs on its own clock that starts while the dome is ~90% risen (0.3 of a screen before the pin), so
       // there is no stretch where everything stands still between the dome landing and the first words; it
       // converges with the pictures' clock and ends with them
-      const L = 0.3 * vh / total + 0.03;
+      const L = 0.3 * vh / span + 0.03;
       const tp = clamp01((pe + L) / (1 + L));
       const tseg = (a, b) => reduce ? 1 : clamp01((tp - a) / (b - a));
       imgs.forEach((im, i) => {

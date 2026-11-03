@@ -259,20 +259,19 @@ input,select,textarea{font:inherit;color:inherit}
 @media (hover:none) and (pointer:coarse){
   .StoryCanvas{height:900lvh}
   .StoryCanvas .StoryCanvas-pin{contain:content}
-  /* the dome moves with the page itself, at exactly the speed of the finger: the pin is taller than the screen by a
-     cream band (--scG) and sticks that much above the top edge, so the band and the photo scroll up natively (a
-     transform set from scroll is a frame behind iOS's scrolling and reads as the photo running at its own pace).
+  /* the dome moves with the page itself, at exactly the speed of the finger: the section starts with a cream band
+     (--scG, its top padding), then the pin, so the band and the photo scroll up natively (a transform set from scroll
+     is a frame behind iOS's scrolling and reads as the photo running at its own pace). The pin still sticks at top:0
+     with the full screen height: Safari 26 tints its status bar and toolbar from a sticky element anchored to the top
+     edge, and falls back to the cream page colour otherwise.
      The curve is a cream cap over the photo's top corners, --scR tall when the photo enters at the bottom; script
      only squashes it (scaleY, composited) as the photo rises, so the top is flat when the photo reaches the top edge */
-  .StoryCanvas{--scG:10lvh;--scR:45lvh}
-  .StoryCanvas .StoryCanvas-pin{top:calc(-1 * var(--scG));height:calc(100lvh + var(--scG))}
+  .StoryCanvas{--scG:10lvh;--scR:45lvh;padding-top:var(--scG)}
   .StoryCanvas .StoryCanvas-imgwrap,.StoryCanvas .StoryCanvas-scrim{clip-path:none}
-  .StoryCanvas-dome{position:absolute;left:0;right:0;top:var(--scG);bottom:0;overflow:hidden}
+  .StoryCanvas-dome{position:absolute;inset:0;overflow:hidden}
   .StoryCanvas-domein{position:absolute;inset:0}
   .StoryCanvas-cap{position:absolute;left:0;top:-1px;width:100%;height:calc(var(--scR) + 1px);fill:var(--cream);
     transform-origin:50% 0;will-change:transform;pointer-events:none}
-  /* text keeps to the screen-sized part at the bottom of the pin */
-  .StoryCanvas .SC-layer:not(.SC-statement){top:var(--scG)}
   .StoryCanvas .SC-build,.StoryCanvas .SC-layer{transition:none}
 }
 .StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
@@ -1818,7 +1817,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   const sc = document.getElementById('storyCanvas');
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
   // touch: wrap the stills and the scrim in the composited dome (see the .StoryCanvas-dome rule)
-  let scDome = null, scDomeIn = null, scCap = null, scCapK = -1;
+  let scDome = null, scDomeIn = null, scCap = null, scCapK = -1, scBand = 0, scBandVh = 0;
   if (sc && scTouch) {
     const iw = sc.querySelector('.StoryCanvas-imgwrap'), sr = sc.querySelector('.StoryCanvas-scrim');
     scDome = document.createElement('div'); scDome.className = 'StoryCanvas-dome'; scDome.setAttribute('aria-hidden', 'true');
@@ -1853,9 +1852,11 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       pin.style.setProperty('--t', t.toFixed(4));
       pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
     }
-    // touch: the pin sticks H above the top edge (the cream band and the dome's curve, see the CSS), so the story's
-    // progress counts from the moment it pins, and runs negative while the dome is still rising
-    const H = scDome ? Math.max(0, pin.offsetHeight - vh) : 0;
+    // touch: the pin sits below a cream band H tall (see the CSS), so the story's progress counts from the moment it
+    // pins, and runs negative while the dome is still rising
+    // the cream band above the pin is the section's top padding (read only when the screen height changes)
+    if (scDome && scBandVh !== vh) { scBandVh = vh; scBand = parseFloat(getComputedStyle(sc).paddingTop) || 0; }
+    const H = scDome ? scBand : 0;
     const rt = r.top + H, span = Math.max(1, total - H);
     // the photo's top edge is at rt on screen until it pins: the curve flattens as that edge travels up the screen
     if (scCap) {
@@ -1930,7 +1931,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   function placeConnector() {
     const pair = sc.querySelector('.SC-pair'), line = sc.querySelector('.Connector--pair'), st = sc.querySelector('.SC-statement');
     if (!pair || !line || !st || !pair.classList.contains('is-on')) return;
-    const pin = sc.firstElementChild.getBoundingClientRect();
+    const pin = (line.offsetParent || sc.firstElementChild).getBoundingClientRect();   // the box the line is positioned in
     // measure "to its tin" from its layout box (offset*), not its animated transform, so the curve does not drift while the words settle
     const tinEl = pair.querySelector('span:nth-child(3)'), pr = pair.getBoundingClientRect();
     const x0 = pr.left + tinEl.offsetLeft + tinEl.offsetWidth - pin.left + 14, y0 = pr.top + tinEl.offsetTop + tinEl.offsetHeight - pin.top + 2;

@@ -254,11 +254,17 @@ input,select,textarea{font:inherit;color:inherit}
 /* only the still on screen gets its own layer: seven full-screen layers at once is more than iOS Safari keeps in memory */
 .StoryCanvas-img.is-on{will-change:transform}
 .StoryCanvas-imgwrap>picture{display:contents}
-/* touch screens: the incoming still fades in over the outgoing one (which stays visible underneath until covered)
-   instead of a hard cut */
+/* touch screens: the story canvas is a one-screen story (see the story player in the script). The incoming still
+   fades in over the outgoing one, which stays visible underneath until covered. */
+.SC-bars{display:none}
 @media (hover:none) and (pointer:coarse){
-  .StoryCanvas-img{transition:opacity 0s linear .6s}
-  .StoryCanvas-img.is-on{z-index:1;transition:opacity .6s ease}
+  .StoryCanvas{height:100svh}
+  .StoryCanvas .StoryCanvas-pin{position:relative;height:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;cursor:pointer}
+  .StoryCanvas-img{transition:opacity 0s linear .7s}
+  .StoryCanvas-img.is-on{z-index:1;transition:opacity .7s ease}
+  .SC-bars{position:absolute;left:var(--side);right:var(--side);top:calc(env(safe-area-inset-top) + 1.6rem);display:flex;gap:.4rem;z-index:5;pointer-events:none}
+  .SC-bars span{flex:1;height:2px;border-radius:2px;background:rgba(244,241,230,.32);overflow:hidden}
+  .SC-bars i{display:block;height:100%;background:var(--cream);transform:scaleX(0);transform-origin:left center}
 }
 .StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
 .StoryCanvas-img.is-on{opacity:1}
@@ -1798,42 +1804,48 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   /* ---- single pinned story canvas ---- */
   const sc = document.getElementById('storyCanvas');
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
-  let scActive = -1;
+  const storyMode = !!sc && scTouch;
+  // hard cuts between stills, like savor; the 2nd scene is held longer
+  const cuts = [0, 0.14, 0.28, 0.44, 0.60, 0.74, 0.88];
   function driveCanvas() {
     if (!sc || sc.closest('.Page').hidden) return;
     const r = sc.getBoundingClientRect(), vh = stableVh;
     if (r.bottom < -vh || r.top > vh * 2) return;                 // well off screen: leave it as it is
-    const total = Math.max(1, sc.offsetHeight - vh);
     const pin = sc.firstElementChild;
-    // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
-    const s = (vh - r.top) / vh;
-    const t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
+    let p, t;
+    if (storyMode) {
+      // phones: a one-screen story; progress comes from the story clock, not from scrolling
+      p = storyP; t = 0;
+    } else {
+      const total = Math.max(1, sc.offsetHeight - vh);
+      // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
+      const s = (vh - r.top) / vh;
+      t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
+      p = Math.min(1, Math.max(0, -r.top / total));
+    }
     pin.style.setProperty('--t', t.toFixed(4));
     pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
-    const p = Math.min(1, Math.max(0, -r.top / total));
-    pin.classList.toggle('is-live', p > 0);
+    pin.classList.toggle('is-live', storyMode || p > 0);
     pin.classList.toggle('is-full', t === 0);
-    const q = p;
     const imgs = sc.querySelectorAll('.StoryCanvas-img'), n = imgs.length;
-    // hard cuts between stills, like savor; the 2nd scene is held longer
-    const cuts = [0, 0.14, 0.28, 0.44, 0.60, 0.74, 0.88];
-    // touch screens: a scene only changes once the scroll is ~90px past its threshold, so the small back-and-forth of a
-    // finger, the end-of-flick bounce or the toolbar sliding in cannot flip the picture to and fro
-    const H = scTouch ? 90 / total : 0;
-    const keep = (was, now, edges) => was !== now && edges.some(e => Math.abs(p - e) < H) ? was : now;
-    let target = 0; for (let i = 0; i < n; i++) if (q >= cuts[i]) target = i;
-    if (scActive < 0 || target === scActive || !scTouch) scActive = target;
-    else if (Math.abs(q - cuts[Math.max(target, scActive)]) >= H) scActive = target;
-    const active = scActive;
+    let active = 0; for (let i = 0; i < n; i++) if (p >= cuts[i]) active = i;
     imgs.forEach((im, i) => {
       im.classList.toggle('is-on', i === active);
-      if (i === active) { const local = (q - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i]); im.style.transform = 'translateY(' + (-local * 6) + 'vh) scale(1.14)'; }
+      if (i === active) {
+        const local = (p - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i]);
+        // story: a slow push-in on each still; scroll: the still drifts up as you scroll
+        im.style.transform = storyMode ? 'scale(' + (1.06 + local * 0.1).toFixed(4) + ')' : 'translateY(' + (-local * 6) + 'vh) scale(1.14)';
+      }
+    });
+    if (storyBars) storyBars.forEach((b, i) => {
+      const f = Math.min(1, Math.max(0, (p - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i])));
+      b.style.transform = 'scaleX(' + f.toFixed(4) + ')';
     });
     const pairEl = sc.querySelector('.SC-pair'), pairWasOn = pairEl && pairEl.classList.contains('is-on');
-    sc.querySelectorAll('.SC-layer').forEach(l => l.classList.toggle('is-on', keep(l.classList.contains('is-on'), p >= +l.dataset.from && p < +l.dataset.to, [+l.dataset.from, +l.dataset.to])));
+    sc.querySelectorAll('.SC-layer').forEach(l => l.classList.toggle('is-on', p >= +l.dataset.from && p < +l.dataset.to));
     // the curve depends on layout only, so it is measured when the pair appears or after a real resize, not every frame
     if (pairEl && pairEl.classList.contains('is-on') && (!pairWasOn || connectorDirty)) { placeConnector(); connectorDirty = false; }
-    sc.querySelectorAll('.SC-layer').forEach(l => { const on = l.classList.contains('is-on'); l.querySelectorAll('.SC-build').forEach(b => b.classList.toggle('is-on', on && (reduce || keep(b.classList.contains('is-on'), p >= +b.dataset.at, [+b.dataset.at])))); });
+    sc.querySelectorAll('.SC-layer').forEach(l => { const on = l.classList.contains('is-on'); l.querySelectorAll('.SC-build').forEach(b => b.classList.toggle('is-on', on && (reduce || p >= +b.dataset.at))); });
   }
   // the dash line runs from just after "to its tin" down to the first word of the statement
   function placeConnector() {
@@ -1858,6 +1870,55 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   if (sc) window.addEventListener('load', () => {
     sc.querySelectorAll('.StoryCanvas-img').forEach(im => { im.loading = 'eager'; if (im.decode) im.decode().catch(() => {}); });
   });
+
+  /* ---- phones: the story canvas is an Instagram-style story ----
+     One screen tall instead of ten, so a flick can never skip scenes. The scenes play on their own (~30s for all
+     seven, looping), tap the right two thirds for the next scene and the left third for the previous one, press and
+     hold to pause. It plays only while most of it is on screen. */
+  const STORY_MS = 30000;
+  let storyP = 0, storyPlaying = false, storyLast = 0, storyHold = false, storyDown = 0, storyBars = null;
+  const storyCalm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function storyScene() { let i = 0; for (let k = 0; k < cuts.length; k++) if (storyP >= cuts[k]) i = k; return i; }
+  function storyGo(dir) {
+    const i = storyScene(), local = (storyP - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i]);
+    if (dir > 0) storyP = i + 1 < cuts.length ? cuts[i + 1] + 1e-4 : 0;
+    else storyP = local > 0.15 || i === 0 ? cuts[i] + 1e-4 : cuts[i - 1] + 1e-4;   // first tap restarts the scene, a second goes back
+    storyLast = performance.now();
+    driveCanvas();
+  }
+  function storyTick(now) {
+    if (!storyPlaying) return;
+    const dt = Math.min(100, now - storyLast); storyLast = now;
+    if (!storyHold && !storyCalm) { storyP += dt / STORY_MS; if (storyP >= 1) storyP = 0; }
+    driveCanvas();
+    requestAnimationFrame(storyTick);
+  }
+  function storyPlay(on) {
+    if (on === storyPlaying) return;
+    storyPlaying = on;
+    if (on) { storyLast = performance.now(); requestAnimationFrame(storyTick); }
+  }
+  if (storyMode) {
+    const pin = sc.firstElementChild;
+    const bars = document.createElement('div');
+    bars.className = 'SC-bars'; bars.setAttribute('aria-hidden', 'true');
+    bars.innerHTML = cuts.map(() => '<span><i></i></span>').join('');
+    pin.appendChild(bars);
+    storyBars = [...bars.querySelectorAll('i')];
+    let inView = false;
+    const sync = () => storyPlay(inView && !document.hidden && !sc.closest('.Page').hidden);
+    new IntersectionObserver(es => { inView = es[0].intersectionRatio >= 0.6; sync(); }, { threshold: [0, 0.6, 1] }).observe(sc);
+    document.addEventListener('visibilitychange', sync);
+    pin.addEventListener('pointerdown', () => { storyDown = performance.now(); storyHold = true; });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => pin.addEventListener(ev, () => { storyHold = false; }));
+    pin.addEventListener('click', e => {
+      if (performance.now() - storyDown > 350) return;            // that was a hold to pause, not a tap
+      const b = pin.getBoundingClientRect();
+      storyGo(e.clientX - b.left < b.width / 3 ? -1 : 1);
+    });
+    pin.addEventListener('contextmenu', e => e.preventDefault());
+    driveCanvas();
+  }
 
   /* ---- scroll-driven story: progress 0→1 per pinned chapter drives builds, parallax, mask and scrub ---- */
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

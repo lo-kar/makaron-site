@@ -274,7 +274,16 @@ input,select,textarea{font:inherit;color:inherit}
   .StoryCanvas-cap{position:absolute;left:0;top:-1px;width:100%;height:calc(var(--scR) + 1px);fill:var(--cream);
     transform-origin:50% 0;will-change:transform;pointer-events:none}
   .StoryCanvas .SC-build,.StoryCanvas .SC-layer{transition:none}
+  /* the cap flattens with the scroll itself, not from a script a frame behind it: the section is a view timeline,
+     and the cap runs from scaleY(1) when the photo's top edge enters at the bottom of the screen (the section's
+     top is --scG above that edge) to scaleY(0) when that edge reaches the top. Browsers without scroll-driven
+     animations keep the scripted fallback in driveCanvas */
+  @supports (animation-timeline:view()) and (animation-range:cover 10lvh){
+    .StoryCanvas{view-timeline:--sc-rise block}
+    .StoryCanvas-cap{animation:sc-cap linear both;animation-timeline:--sc-rise;animation-range:cover var(--scG) cover calc(100lvh + var(--scG))}
+  }
 }
+@keyframes sc-cap{from{transform:scaleY(1)}to{transform:scaleY(0)}}
 .StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
 .StoryCanvas-img.is-on{opacity:1}
 .StoryCanvas-scrim{position:absolute;inset:0;background:rgba(0,0,0,.30);pointer-events:none}
@@ -1819,6 +1828,9 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
   // touch: wrap the stills and the scrim in the composited dome (see the .StoryCanvas-dome rule)
   let scDome = null, scDomeIn = null, scCap = null, scCapK = -1, scBand = 0, scBandVh = 0;
+  // where the browser has scroll-driven animations (Safari 26, Chrome 115), the cap is flattened by the compositor in
+  // lockstep with the scroll (see the .StoryCanvas-cap animation rule); the script only drives it as a fallback
+  const scCapCss = !!(window.CSS && CSS.supports && CSS.supports('animation-timeline: view()') && CSS.supports('animation-range: cover 10lvh'));
   if (sc && scTouch) {
     const iw = sc.querySelector('.StoryCanvas-imgwrap'), sr = sc.querySelector('.StoryCanvas-scrim');
     scDome = document.createElement('div'); scDome.className = 'StoryCanvas-dome'; scDome.setAttribute('aria-hidden', 'true');
@@ -1860,7 +1872,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const H = scDome ? scBand : 0;
     const rt = r.top + H, span = Math.max(1, total - H);
     // the photo's top edge is at rt on screen until it pins: the curve flattens as that edge travels up the screen
-    if (scCap) {
+    if (scCap && !scCapCss) {
       const k = Math.round(clamp01(rt / vh) * 1000) / 1000;
       if (k !== scCapK) { scCapK = k; scCap.style.transform = 'scaleY(' + k + ')'; }
     }
@@ -1877,7 +1889,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const cuts = [0, 0.14, 0.28, 0.44, 0.60, 0.74, 0.88];
     const seg = (a, b) => reduce ? 1 : clamp01((p - a) / (b - a));
     const ease = f => f < .5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2;   // power3.inOut, as savor's timeline
-    const pairEl = sc.querySelector('.SC-pair'), pairWasOn = pairEl && pairEl.classList.contains('is-on');
+    const pairEl = sc.querySelector('.SC-pair');
     if (scTouch) {
       // touch, the savor way: every piece is scrubbed by the scroll. Each still fades in over the one before it across
       // a short stretch of scroll (the one below stays fully visible until it is covered), each phrase eases in over
@@ -1902,7 +1914,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
         l.classList.toggle('is-on', on);
         l.style.opacity = on ? (1 - ease(tseg(to - 0.025, to))).toFixed(3) : '';
       });
-      if (pairEl && pairEl.classList.contains('is-on') && (!pairWasOn || connectorDirty)) { placeConnector(); connectorDirty = false; }
+      // re-placed every frame the pair is on: it reads layout offsets only and writes nothing unless a value changed
+      if (pairEl && pairEl.classList.contains('is-on')) { placeConnector(); connectorDirty = false; }
       sc.querySelectorAll('.SC-layer.is-on .SC-build').forEach(b => {
         if (b === scRule || b === scCurve) return;
         const at = +b.dataset.at, f = ease(tseg(at, at + 0.03));
@@ -1920,32 +1933,40 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       if (i === active) { const local = (p - cuts[i]) / ((cuts[i + 1] ?? 1) - cuts[i]); im.style.transform = 'translateY(' + (-local * 6) + 'vh) scale(1.14)'; }
     });
     sc.querySelectorAll('.SC-layer').forEach(l => l.classList.toggle('is-on', p >= +l.dataset.from && p < +l.dataset.to));
-    // the curve depends on layout only, so it is measured when the pair appears or after a real resize, not every frame
-    if (pairEl && pairEl.classList.contains('is-on') && (!pairWasOn || connectorDirty)) { placeConnector(); connectorDirty = false; }
+    // the curve depends on layout only; it is re-placed every frame the pair is on (cheap: offsets, no client rects)
+    if (pairEl && pairEl.classList.contains('is-on')) { placeConnector(); connectorDirty = false; }
     sc.querySelectorAll('.SC-layer').forEach(l => { const on = l.classList.contains('is-on'); l.querySelectorAll('.SC-build').forEach(b => b.classList.toggle('is-on', on && (reduce || p >= +b.dataset.at))); });
     // the lines draw with the scroll: the rule grows left→right between the two phrases, then the S-curve unrolls
     // top→bottom down to the statement, exactly as far as the page has been scrolled (and back again on the way up)
     if (scRule) scRule.style.transform = 'scaleX(' + seg(0.05, 0.10).toFixed(4) + ')';
     if (scCurve) scCurve.style.clipPath = 'inset(-2px -2px ' + ((1 - seg(0.11, 0.17)) * 100).toFixed(2) + '% -2px)';
   }
-  // the dash line runs from just after "to its tin" down to the first word of the statement
+  // the dash line runs from just after "to its tin" down to the first word of the statement.
+  // Everything is read from layout offsets (offsetLeft/offsetTop), never from getBoundingClientRect: the pin is a
+  // sticky element that is still travelling up the screen when the pair appears, and on iOS the client rects of a
+  // moving sticky box and of its children are not reported from the same frame, which put the curve ~80px below the
+  // words. Offsets are pure layout, so they are the same whether the pin is moving, stuck, or transformed.
   function placeConnector() {
     const pair = sc.querySelector('.SC-pair'), line = sc.querySelector('.Connector--pair'), st = sc.querySelector('.SC-statement');
     if (!pair || !line || !st || !pair.classList.contains('is-on')) return;
-    const pin = (line.offsetParent || sc.firstElementChild).getBoundingClientRect();   // the box the line is positioned in
-    // measure "to its tin" from its layout box (offset*), not its animated transform, so the curve does not drift while the words settle
-    const tinEl = pair.querySelector('span:nth-child(3)'), pr = pair.getBoundingClientRect();
-    const x0 = pr.left + tinEl.offsetLeft + tinEl.offsetWidth - pin.left + 14, y0 = pr.top + tinEl.offsetTop + tinEl.offsetHeight - pin.top + 2;
+    const pin = sc.firstElementChild;
+    // offsets of an element relative to the pin's padding box, walking up the offsetParent chain (pair → pin)
+    const within = el => { let x = 0, y = 0; while (el && el !== pin) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; } return { x, y }; };
+    const tinEl = pair.querySelector('span:nth-child(3)'), tin = within(tinEl), pairO = within(pair);
+    // the line is positioned inside the pair layer, so its coordinates are relative to the pair's padding box
+    const x0 = tin.x - pairO.x + tinEl.offsetWidth + 14, y0 = tin.y - pairO.y + tinEl.offsetHeight + 2;
     const lh = parseFloat(getComputedStyle(st).lineHeight) || 28;
-    const stR = st.getBoundingClientRect();
-    let x1 = (stR.width ? stR.left - pin.left : pin.width * 0.58) - 18;
-    let y1 = (stR.height ? stR.top - pin.top : pin.height - innerHeight * 0.20 - lh * 2) + lh * 0.5;
+    const stO = within(st), sw = st.offsetWidth, sh = st.offsetHeight;
+    let x1 = (sw ? stO.x - pairO.x : pin.offsetWidth * 0.58) - 18;
+    let y1 = (sh ? stO.y - pairO.y : pin.offsetHeight - innerHeight * 0.20 - lh * 2) + lh * 0.5;
     // phones: the statement sits on the left gutter, so the line lands just above its first word instead of beside it
-    if (innerWidth < 768 && stR.height) { x1 = stR.left - pin.left + 6; y1 = stR.top - pin.top - 10; }
+    if (innerWidth < 768 && sh) { x1 = stO.x - pairO.x + 6; y1 = stO.y - pairO.y - 10; }
     const flip = x1 < x0, wpx = Math.max(24, Math.abs(x1 - x0));
-    line.querySelector('path').setAttribute('d', flip ? 'M100 0 C 100 58, 0 42, 0 100' : 'M0 0 C 0 58, 100 42, 100 100');
-    line.style.left = (flip ? x1 : x0).toFixed(0) + 'px'; line.style.top = y0.toFixed(0) + 'px';
-    line.style.width = wpx.toFixed(0) + 'px'; line.style.height = Math.max(40, y1 - y0).toFixed(0) + 'px';
+    const d = flip ? 'M100 0 C 100 58, 0 42, 0 100' : 'M0 0 C 0 58, 100 42, 100 100', path = line.querySelector('path');
+    if (path.getAttribute('d') !== d) path.setAttribute('d', d);
+    const L = (flip ? x1 : x0).toFixed(0) + 'px', T = y0.toFixed(0) + 'px', W = wpx.toFixed(0) + 'px', H = Math.max(40, y1 - y0).toFixed(0) + 'px';
+    if (line.style.left !== L) line.style.left = L; if (line.style.top !== T) line.style.top = T;
+    if (line.style.width !== W) line.style.width = W; if (line.style.height !== H) line.style.height = H;
   }
   // decode every still ahead of time, so a hard cut never waits on a 2560px JPEG
   if (sc) window.addEventListener('load', () => {

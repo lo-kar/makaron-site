@@ -1839,7 +1839,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const pin = sc.firstElementChild;
     // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
     const s = (vh - r.top) / vh;
-    const t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
+    // phones rise it a little sooner (1.25 instead of 0.8): the cream gap below the hero is ~20% shorter
+    const t = Math.min(1, Math.max(0, 1 - (scTouch ? 1.25 : 0.8) * Math.max(0, s)));
     if (scDome) {
       const R = Math.round(vh * 0.3);
       if (R !== scDomeR) { scDomeR = R; scDome.style.setProperty('--domeR', R + 'px'); }

@@ -260,6 +260,13 @@ input,select,textarea{font:inherit;color:inherit}
 @media (hover:none) and (pointer:coarse){
   .StoryCanvas{height:900lvh}
   .StoryCanvas .StoryCanvas-pin{contain:content}
+  /* the dome, without clip-path (iOS repaints a full-screen clip-path every frame): a fixed rounded window taller than
+     the screen by its curve slides up with transform while its content slides down by the same amount, so the photo
+     stays put and nothing is repainted; once it has risen, the curve is above the top edge and the edge is flat */
+  .StoryCanvas .StoryCanvas-imgwrap,.StoryCanvas .StoryCanvas-scrim{clip-path:none}
+  .StoryCanvas-dome{position:absolute;left:0;right:0;top:calc(-1 * var(--domeR,30svh));height:calc(100% + var(--domeR,30svh));
+    border-radius:50% 50% 0 0 / var(--domeR,30svh) var(--domeR,30svh) 0 0;overflow:hidden;will-change:transform;transform:translate3d(0,100lvh,0)}
+  .StoryCanvas-domein{position:absolute;left:0;right:0;top:var(--domeR,30svh);bottom:0;will-change:transform}
   .StoryCanvas .SC-build,.StoryCanvas .SC-layer{transition:none}
 }
 .StoryCanvas-pin.is-full .StoryCanvas-imgwrap,.StoryCanvas-pin.is-full .StoryCanvas-scrim{clip-path:none}
@@ -1804,6 +1811,14 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   /* ---- single pinned story canvas ---- */
   const sc = document.getElementById('storyCanvas');
   const scTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  // touch: wrap the stills and the scrim in the composited dome (see the .StoryCanvas-dome rule)
+  let scDome = null, scDomeIn = null, scDomeR = 0;
+  if (sc && scTouch) {
+    const iw = sc.querySelector('.StoryCanvas-imgwrap'), sr = sc.querySelector('.StoryCanvas-scrim');
+    scDome = document.createElement('div'); scDome.className = 'StoryCanvas-dome'; scDome.setAttribute('aria-hidden', 'true');
+    scDomeIn = document.createElement('div'); scDomeIn.className = 'StoryCanvas-domein';
+    iw.before(scDome); scDome.appendChild(scDomeIn); scDomeIn.append(iw, sr);
+  }
   // savor's smoother (decel .5, accel .15) with a per-frame speed cap; keeps asking for frames until it has caught up
   const scSmooth = { cur: -1, vel: 0 };
   function smoothP(target) {
@@ -1825,8 +1840,16 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     // dome: as the section approaches (s 0→1) and pins (s>1), the top inset falls 100%→0 (savor: t = 1 − 0.8·s)
     const s = (vh - r.top) / vh;
     const t = Math.min(1, Math.max(0, 1 - 0.8 * Math.max(0, s)));
-    pin.style.setProperty('--t', t.toFixed(4));
-    pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
+    if (scDome) {
+      const R = Math.round(vh * 0.3);
+      if (R !== scDomeR) { scDomeR = R; scDome.style.setProperty('--domeR', R + 'px'); }
+      const T = (t * (vh + R)).toFixed(1);
+      scDome.style.transform = 'translate3d(0,' + T + 'px,0)';
+      scDomeIn.style.transform = 'translate3d(0,-' + T + 'px,0)';
+    } else {
+      pin.style.setProperty('--t', t.toFixed(4));
+      pin.style.setProperty('--ry', (t * 60).toFixed(2) + 'svh');
+    }
     const rawP = Math.min(1, Math.max(0, -r.top / total));
     // touch: the page scrolls natively, the story's animations follow a smoothed copy of the progress (savor's
     // velocity-capped smoother), so a fast flick plays the scenes through instead of skipping them

@@ -279,6 +279,8 @@ input,select,textarea{font:inherit;color:inherit}
      animations keep the scripted fallback in driveCanvas */
   @supports (animation-timeline:view()) and (animation-range:cover 10lvh){
     .StoryCanvas{view-timeline:--sc-rise block}
+    /* the cascade's frames follow keyframes built by buildEvCss on the section's timeline (see the script) */
+    .Ev.is-css{view-timeline:--ev block}
     .StoryCanvas-cap{animation:sc-cap linear both;animation-timeline:--sc-rise;animation-range:cover var(--scG) cover calc(100lvh + var(--scG))}
   }
 }
@@ -1775,8 +1777,55 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const cw = inner.getBoundingClientRect().width;
     evText.style.top = (evCards[8].offsetTop - 0.013 * cw).toFixed(0) + 'px';   // text block starts level with the first small frame
   }
+  // touch: the cascade is played by the compositor, not by this script. Scroll-driven animations run in lockstep with
+  // native scrolling, while a transform set from a scroll event lands a frame or two late on iOS and the frames
+  // visibly slide into place. The same formulas as driveEv are sampled once (per width and screen height) into
+  // keyframes on a view timeline of the section, one pair of @keyframes per frame (position + clip, and photo scale)
+  const evCss = !!(window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')) && matchMedia('(hover: none) and (pointer: coarse)').matches;
+  let evStyle = null, evBuiltKey = '';
+  function buildEvCss() {
+    if (!evCss || !ev || !evCards.length || ev.closest('.Page').hidden) return false;
+    const L = stableVh, vw = innerWidth;
+    const er = ev.getBoundingClientRect(), H = er.height;
+    if (!H) return false;
+    // rebuilt only when the width, the screen height or the section's height changes (fonts and photos arriving)
+    const key = vw + 'x' + L + 'x' + Math.round(H);
+    if (evBuiltKey === key) return true;
+    const phone = vw < 768, freq = phone ? 6 : 3;
+    const wave = v => phone ? 1 - Math.abs(((v / Math.PI) % 2 + 2) % 2 - 1) : Math.sin(v) * .5 + .5;
+    const widths = evCards.map(c => c.offsetWidth), maxW = phone ? Math.max(...widths) : 0;
+    const rects = evCards.map(c => c.getBoundingClientRect());
+    const N = 120; let css = '';
+    evCards.forEach((card, ci) => {
+      const off = rects[ci].top - er.top, yt = rects[ci].height;
+      let kc = '', ki = '';
+      for (let i = 0; i <= N; i++) {
+        // q is the section's view-timeline progress (cover): 0 when its top enters at the bottom, 1 when its bottom leaves at the top
+        const q = i / N, lt = L - q * (H + L) + off;
+        const u = clamp01((L - lt) / (L + yt)), ot = Math.sin(Math.PI * u);
+        const pt = 1 - Math.pow(clamp01(lt / L), 2), scale = 1.75 + pt * (1 - 1.75);
+        const an = smooth(q), tp = clamp01((L - lt) / (1.5 * L));
+        const x = wave((an + tp) * freq) * vw * (phone ? .3 : .35) + (phone ? (maxW - widths[ci]) / 2 : 0);
+        const clip = smooth(1 - ot) * 0.4 * 50, pct = (q * 100).toFixed(2) + '%';
+        kc += pct + '{translate:' + x.toFixed(1) + 'px 0px;clip-path:inset(-1px ' + clip.toFixed(2) + '%)}';
+        ki += pct + '{scale:' + scale.toFixed(4) + '}';
+      }
+      css += '@keyframes ev-c' + ci + '{' + kc + '}@keyframes ev-i' + ci + '{' + ki + '}';
+      const img = card.firstElementChild;
+      card.style.translate = ''; card.style.clipPath = ''; img.style.scale = '';
+      // the animation shorthand resets the timeline, so the timeline is set after it
+      card.style.animation = 'ev-c' + ci + ' linear both'; card.style.setProperty('animation-timeline', '--ev');
+      img.style.animation = 'ev-i' + ci + ' linear both'; img.style.setProperty('animation-timeline', '--ev');
+    });
+    if (!evStyle) { evStyle = document.createElement('style'); evStyle.id = 'evKeyframes'; document.head.appendChild(evStyle); }
+    evStyle.textContent = css;
+    ev.classList.add('is-css');
+    evBuiltKey = key;
+    return true;
+  }
   function driveEv() {
     if (!ev || ev.closest('.Page').hidden) return;
+    if (evCss && buildEvCss()) return;                            // touch: the compositor has it from here
     const L = stableVh, vw = innerWidth;
     const er = ev.getBoundingClientRect();
     if (er.bottom < -L * 0.5 || er.top > L * 1.5) return;       // nowhere near the screen: nothing to move

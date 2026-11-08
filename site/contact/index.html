@@ -31,7 +31,7 @@
 /* 1. TOKENS — re-skinned from the Savor template to Makaron's olive palette */
 :root{
   --cream:#f4f1e6; --brown:#26301c; --sand:#e7e3d3; --sand-deep:#d9d4c0;
-  --cream-deep:#efebdb; --yellow:#b3c45a;--logo:#5c5c12; --cocoa:#36441f; --alert:#c0532f; --black:#141710;
+  --cream-deep:#efebdb; --yellow:#b3c45a; --cocoa:#36441f; --alert:#c0532f; --black:#141710;
   --bg:var(--cream); --ink:var(--brown);
   --ink-20:rgba(38,48,28,.2); --ink-30:rgba(38,48,28,.3); --ink-50:rgba(38,48,28,.5);
   --font-display:"Instrument Serif",Georgia,"Times New Roman",serif;
@@ -108,8 +108,6 @@ input,select,textarea{font:inherit;color:inherit}
 .Btn--brown:hover{background:var(--cocoa)}
 .Btn--brown-yellow{background:var(--brown);color:var(--yellow)}
 .Btn--grey{background:var(--sand);color:var(--brown)}
-.Btn--logo{background:var(--logo);color:var(--cream)}
-.Btn--logo:hover{background:#4f4f10}
 .Btn--grey:hover{background:var(--sand-deep)}
 .Btn--ghost{background:transparent;box-shadow:inset 0 0 0 1px currentColor}
 .Btn--small{padding:1rem 1.6rem;font-size:var(--fs-small)}
@@ -358,10 +356,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
 .HeroVideo-media::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,.05) 35%,rgba(0,0,0,.5) 100%);z-index:1}
 .HeroVideo-ui{position:relative;z-index:2;display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--grid-gap);padding:0 var(--side) clamp(4rem,6vh,6rem);align-items:end}
 .HeroVideo-title{grid-column:1/span 9;font-family:var(--font-display);font-size:var(--fs-hero);line-height:.86;letter-spacing:-.015em;max-width:8em;margin-bottom:-.02em}
-.HeroVideo-side{grid-column:9/-1;display:flex;flex-direction:column;align-items:flex-end;justify-self:end;gap:2.4rem;padding-bottom:1.2rem}
+.HeroVideo-side{grid-column:10/-1;display:flex;flex-direction:column;align-items:flex-end;justify-self:end;gap:2.4rem;padding-bottom:1.2rem}
 .HeroVideo-desc{font-size:var(--fs-ui);line-height:1.3;max-width:16em;text-align:right}
-.HeroVideo-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:1.2rem}
-@media (min-width:48.0625em){.HeroVideo-actions{flex-wrap:nowrap}}
 @media (max-width:48em){.HeroVideo-title{grid-column:1/-1}.HeroVideo-side{grid-column:1/-1;margin-top:3rem}.HeroTree{background-position:center bottom;opacity:.45}}
 .Story{position:relative}
 .StoryChapter{position:relative;height:190svh;margin-top:-1px}
@@ -740,7 +736,6 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
   /* hero: line and button under the title, on the same left edge */
   .HeroVideo-side{align-items:flex-start;justify-self:start}
   .HeroVideo-desc{text-align:left}
-  .HeroVideo-actions{justify-content:flex-start}
 
   /* outro: the two title lines read as one headline, then the photo full width, then the note */
   .Outro-lineA{grid-column:1/-1;grid-row:1}
@@ -858,10 +853,7 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
       <h1 class="HeroVideo-title Lines"><span class="line"><span style="--i:0">One olive.</span></span><span class="line"><span style="--i:1">One grove.</span></span></h1>
       <div class="HeroVideo-side">
         <p class="HeroVideo-desc Reveal">Early-harvest, cold-extracted,<br>single-origin olive oil</p>
-        <div class="HeroVideo-actions">
-          <a class="Btn Btn--logo Reveal" href="/shop/"><span>Shop </span><span>now</span></a>
-          <button class="Btn Btn--grey Reveal" type="button" data-film><span>Watch </span><span>Film</span></button>
-        </div>
+        <button class="Btn Btn--grey Reveal" type="button" data-film><span>Watch </span><span>Film</span></button>
       </div>
     </div>
   </div>

@@ -86,7 +86,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 ## Known gaps
 
 - The contact form is front-end only: it validates, shows thanks and sends nothing. Its copy still promises a 10% code by email.
-- "Order now" buttons link to `/contact/`. There is no cart or checkout.
+- The shop buttons read "Register interest" for now and link to `/contact/`. There is no cart or checkout.
 - Legal pages contain placeholders: `[GB 000 0000 00]` (VAT number), `[two years]`, `[90 days]`.
 - No analytics are installed.
 - Unknown paths serve the home page with status 200 (soft 404).

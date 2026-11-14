@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Static marketing site for makaron.com (Makaron olive oil, operated by Metrics34 UK Limited). There is no framework, package manager or test suite. The whole site lives in `site/index.html` (CSS, markup and JS inline) plus `site/assets/` (~43 MB, mostly MP4). `HANDOVER.md` is the original developer handover. It predates the real-path routing and SEO build described below.
+Static marketing site for www.makaron.uk (Makaron olive oil, operated by Metrics34 UK Limited). There is no framework, package manager or test suite. The whole site lives in `site/index.html` (CSS, markup and JS inline) plus `site/assets/` (~43 MB, mostly MP4). `HANDOVER.md` is the original developer handover. It predates the real-path routing and SEO build described below.
 
 ## The one build step
 
@@ -18,7 +18,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 - The script uses the Python standard library only, and its output is deterministic.
 - Generated files are **committed**: `site/<route>/index.html`, `site/sitemap.xml`, `site/robots.txt`, `site/llms*.txt`. This way any static host serves them without running a build.
 - Never edit a generated route copy, or the `<!-- seo -->…<!-- /seo -->` block in `index.html`. Both are rewritten from the `data-*` attributes on each page section.
-- `SITE_URL` (default `https://makaron.com`) sets the canonical origin.
+- `SITE_URL` (default `https://www.makaron.uk`) sets the canonical origin.
 - On any other hostname, an inline script in the SEO block adds `noindex`. On the server, a demo that only has `auto` in `domains.txt` also sends an `X-Robots-Tag: noindex` header.
 
 ## Local development
@@ -56,7 +56,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
   - regenerates `/etc/caddy/Caddyfile` from `server/domains.txt`;
   - reloads Caddy if the config changed.
 - **Pushing to `main` is the deploy.** The server does not run `tools/build.py`, so commit the generated files.
-- `server/domains.txt` lists one hostname per line. `auto` expands to `<ip-with-dashes>.sslip.io`.
+- `server/domains.txt` lists one hostname per line. `auto` expands to `<ip-with-dashes>.sslip.io`. The first real hostname is the site's address (`www.makaron.uk`); if its www/bare twin is listed too (`makaron.uk`), the twin redirects to it.
 - `install.sh` hardcodes the clone URL `https://github.com/lo-kar/makaron-site.git`. Update it if the repo moves.
 
 ## Architecture of `site/index.html`
@@ -90,7 +90,6 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 - Legal pages contain placeholders: `[GB 000 0000 00]` (VAT number), `[two years]`, `[90 days]`.
 - No analytics are installed.
 - Unknown paths serve the home page with status 200 (soft 404).
-- The tin label prints makaronoliveoil.com, while the site targets makaron.com.
 
 ## Copy rules (from the owner)
 

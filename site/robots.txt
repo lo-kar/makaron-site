@@ -39,4 +39,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://makaron.com/sitemap.xml
+Sitemap: https://www.makaron.uk/sitemap.xml

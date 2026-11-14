@@ -15,9 +15,23 @@ fi
 IP=$(curl -4 -fsS --max-time 5 http://169.254.169.254/hetzner/v1/metadata/public-ipv4 || hostname -I | awk '{print $1}')
 # a server that only answers on its sslip.io address is a demo: tell search engines not to index it
 if grep -v '^\s*#' server/domains.txt | sed '/^\s*$/d' | grep -qv '^auto$'; then ROBOTS=""; else ROBOTS='header X-Robots-Tag "noindex, nofollow"'; fi
-HOSTS=$(grep -v '^\s*#' server/domains.txt | sed '/^\s*$/d' | sed "s/^auto$/$(echo "$IP" | tr . -).sslip.io/" | paste -sd, - | sed 's/,/, /g')
+SSLIP="$(echo "$IP" | tr . -).sslip.io"
+mapfile -t LIST < <(grep -v '^\s*#' server/domains.txt | sed '/^\s*$/d' | sed "s/^auto$/$SSLIP/")
+# the first real hostname in domains.txt is the site's address. If its twin is listed too (makaron.uk for
+# www.makaron.uk, or the other way round), the twin does not serve the site: it redirects to the address.
+PRIMARY=""; TWIN=""
+for h in "${LIST[@]}"; do if [ "$h" != "$SSLIP" ]; then PRIMARY=$h; break; fi; done
+if [ -n "$PRIMARY" ]; then
+  case "$PRIMARY" in www.*) t=${PRIMARY#www.} ;; *) t=www.$PRIMARY ;; esac
+  for h in "${LIST[@]}"; do if [ "$h" = "$t" ]; then TWIN=$t; fi; done
+fi
+HOSTS=""; for h in "${LIST[@]}"; do if [ "$h" != "$TWIN" ]; then HOSTS="${HOSTS:+$HOSTS, }$h"; fi; done
+REDIRECT=""; if [ -n "$TWIN" ]; then REDIRECT="$TWIN {
+	redir https://$PRIMARY{uri} permanent
+}
+"; fi
 cat > /etc/caddy/Caddyfile <<CADDY
-$HOSTS {
+$REDIRECT$HOSTS {
 	root * $REPO/site
 	encode zstd gzip
 	@assets path /assets/*

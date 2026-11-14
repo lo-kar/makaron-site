@@ -11,7 +11,7 @@ The browser still runs the whole site as one page: the router in index.html swap
 
 Usage:  python3 tools/build.py            # write everything
         python3 tools/build.py --check    # exit 1 if anything is out of date (nothing is written)
-Env:    SITE_URL (default https://makaron.com) — the production origin used in canonical URLs and the sitemap.
+Env:    SITE_URL (default https://www.makaron.uk) — the production origin used in canonical URLs and the sitemap.
 Only Python's standard library is used. Output is deterministic, so re-running without changes writes nothing.
 """
 import html
@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / 'site'
 SOURCE = ROOT / 'index.html'
-SITE_URL = os.environ.get('SITE_URL', 'https://makaron.com').rstrip('/')
+SITE_URL = os.environ.get('SITE_URL', 'https://www.makaron.uk').rstrip('/')
 PROD_HOST = re.sub(r'^https?://', '', SITE_URL).split('/')[0]
 DEFAULT_IMAGE = '/assets/og-image.jpg'
 

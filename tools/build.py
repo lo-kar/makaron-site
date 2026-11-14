@@ -36,7 +36,7 @@ ORG = {
     'url': SITE_URL + '/',
     'logo': SITE_URL + '/assets/emblem.png',
     'email': 'hello@makaron.com',
-    'telephone': '+90 532 433 69 79',
+    'telephone': '+44 7502 176611',
     'sameAs': ['https://www.instagram.com/makaronoliveoil/'],
     'address': {'@type': 'PostalAddress', 'streetAddress': '81 Turners Hill', 'addressLocality': 'Cheshunt',
                 'addressRegion': 'Hertfordshire', 'postalCode': 'EN8 9BD', 'addressCountry': 'GB'},

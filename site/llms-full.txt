@@ -557,7 +557,7 @@ Last updated 31 October 2026
 
 ### 1. Who we are
 
-This website is operated by Metrics34 UK Limited (“we”, “us”), a company registered in England and Wales under number 11149283, with its registered office at 81 Turners Hill, Cheshunt, Waltham Cross, Hertfordshire, EN8 9BD. You can contact us at [hello@makaron.com](mailto:hello@makaron.com), or reach the company directly at [info@metrics34.co.uk](mailto:info@metrics34.co.uk).
+This website is operated by Metrics34 UK Limited (“we”, “us”), a company registered in England and Wales under number 11149283, with its registered office at 81 Turners Hill, Cheshunt, Waltham Cross, Hertfordshire, EN8 9BD. You can contact us at [info@metrics34.co.uk](mailto:info@metrics34.co.uk).
 
 ### 2. These terms
 
@@ -609,7 +609,7 @@ Last updated 31 October 2026
 
 ### 1. Who is responsible for your data
 
-Metrics34 UK Limited (company number 11149283) of 81 Turners Hill, Cheshunt, Waltham Cross, Hertfordshire, United Kingdom, EN8 9BD is the data controller for the personal data collected through this website. Questions about this policy can be sent to [hello@makaron.com](mailto:hello@makaron.com) or [info@metrics34.co.uk](mailto:info@metrics34.co.uk).
+Metrics34 UK Limited (company number 11149283) of 81 Turners Hill, Cheshunt, Waltham Cross, Hertfordshire, United Kingdom, EN8 9BD is the data controller for the personal data collected through this website. Questions about this policy can be sent to [info@metrics34.co.uk](mailto:info@metrics34.co.uk).
 
 ### 2. What we collect
 
@@ -657,7 +657,7 @@ When you first visit, a banner asks which cookies you accept; nothing non-essent
 
 ### 7. Your rights
 
-Under UK data protection law you have the right to ask for a copy of the personal data we hold about you, to have inaccurate data corrected, to have your data erased where we no longer need it, to object to or restrict certain processing, and to receive data you have given us in a portable form. To exercise any of these rights, email [hello@makaron.com](mailto:hello@makaron.com). We will respond within one month.
+Under UK data protection law you have the right to ask for a copy of the personal data we hold about you, to have inaccurate data corrected, to have your data erased where we no longer need it, to object to or restrict certain processing, and to receive data you have given us in a portable form. To exercise any of these rights, email [info@metrics34.co.uk](mailto:info@metrics34.co.uk). We will respond within one month.
 
 If you are unhappy with how we have handled your data, you can complain to the Information Commissioner's Office at ico.org.uk.
 
@@ -673,7 +673,7 @@ URL: https://www.makaron.uk/contact/
 
 Email
 
-[hello@makaron.com](mailto:hello@makaron.com)
+[info@metrics34.co.uk](mailto:info@metrics34.co.uk)
 
 Phone
 
@@ -690,8 +690,6 @@ Instagram
 Company
 
 Metrics34 UK Limited Company number 11149283 81 Turners Hill, Cheshunt, Waltham Cross, Hertfordshire, United Kingdom, EN8 9BD
-
-[info@metrics34.co.uk](mailto:info@metrics34.co.uk)
 
 ## Join the harvest list, place an order, or ask about trade. We read every message.
 

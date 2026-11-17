@@ -35,7 +35,7 @@ ORG = {
     'legalName': 'Metrics34 UK Limited',
     'url': SITE_URL + '/',
     'logo': SITE_URL + '/assets/emblem.png',
-    'email': 'hello@makaron.com',
+    'email': 'info@metrics34.co.uk',
     'telephone': '+44 7502 176611',
     'sameAs': ['https://www.instagram.com/makaronoliveoil/'],
     'address': {'@type': 'PostalAddress', 'streetAddress': '81 Turners Hill', 'addressLocality': 'Cheshunt',
@@ -314,7 +314,7 @@ def llms(routes, products, analysis):
     if lot:
         out.append(f'- Certificate of analysis: {lot}')
     out += [f'- {k}: {v}' for k, v in rows]
-    out += ['- Packaging: light-proof tins', '- Contact: hello@makaron.com · Instagram @makaronoliveoil', '',
+    out += ['- Packaging: light-proof tins', '- Contact: info@metrics34.co.uk · Instagram @makaronoliveoil', '',
             '## Products and prices (GBP)', '']
     out += [f'- {p["name"]} — £{p["price"]}: {p["description"]}' for p in products]
     out += ['', '## Pages', '']

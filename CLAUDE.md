@@ -85,7 +85,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 
 ## Known gaps
 
-- The contact form is front-end only: it validates, shows thanks and sends nothing. Its copy still promises a 10% code by email.
+- The contact form posts to Web3Forms (`https://api.web3forms.com/submit`) using the public access key in the form's `data-w3f-key` attribute. The key is still empty: until it is filled in, the form sends nothing and tells the visitor to email info@metrics34.co.uk.
 - The shop buttons read "Register interest" for now and link to `/contact/`. There is no cart or checkout.
 - Legal pages contain placeholders: `[GB 000 0000 00]` (VAT number), `[two years]`, `[90 days]`.
 - No analytics are installed.

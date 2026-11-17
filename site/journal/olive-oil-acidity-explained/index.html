@@ -611,6 +611,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
 .Form-actions{margin-top:var(--space-s);display:flex;flex-wrap:wrap;align-items:center;gap:2.4rem}
 .Form-legal{font-size:var(--fs-small);opacity:.7;max-width:26em}
 .Form-msg{font-family:var(--font-mono);font-size:var(--fs-small);min-height:1.4em}
+.Form-hp{display:none}
+.Form button[disabled]{opacity:.55;pointer-events:none}
 @media (max-width:60em){.Contact-side,.Contact-main{grid-column:1/-1}.Contact-side{order:2;margin-top:var(--space-m)}.Form-row{grid-template-columns:1fr}}
 
 /* 11. FOOTER */
@@ -1498,7 +1500,8 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     </aside>
     <div class="Contact-main">
       <h1 class="Contact-intro Reveal">Join the harvest list, place an order, or ask about trade. We read every message.</h1>
-      <form class="Form" id="contactForm" novalidate>
+      <form class="Form" id="contactForm" novalidate data-w3f-key="">
+        <input class="Form-hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="Field Field--select"><label for="f-type">Enquiry type</label><select id="f-type" name="type"><option value="" hidden></option><option>Harvest newsletter</option><option>Order</option><option>Trade &amp; catering</option><option>Press</option><option>Other</option></select></div>
         <div class="Form-row">
           <div class="Field"><label for="f-first">First name</label><input id="f-first" name="first" type="text" autocomplete="given-name"></div>
@@ -1727,15 +1730,33 @@ html.is-menu-open,html.is-menu-open body{overflow:hidden}
     const sync = () => el.closest('.Field').classList.toggle('is-filled', !!el.value);
     el.addEventListener('input', sync); el.addEventListener('change', sync); sync();
   });
+  // Contact form: each message is delivered by email through Web3Forms. The key in data-w3f-key is the form's public
+  // id, not a secret; it decides which inbox receives the messages. Without a key nothing is sent and the form says so.
   const cf = document.getElementById('contactForm');
-  if (cf) cf.addEventListener('submit', e => {
+  if (cf) cf.addEventListener('submit', async e => {
     e.preventDefault();
-    const email = document.getElementById('f-email').value.trim();
-    const msg = document.getElementById('formMsg');
+    const msg = document.getElementById('formMsg'), btn = cf.querySelector('button[type="submit"]');
+    const val = id => document.getElementById(id).value.trim();
+    const email = val('f-email'), key = (cf.dataset.w3fKey || '').trim();
+    const fallback = 'Please email info@metrics34.co.uk instead.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Please enter a valid email address.'; return; }
-    msg.textContent = 'Thank you — we will be in touch, and your 10% code is on its way.';
-    cf.reset();
-    cf.querySelectorAll('.Field').forEach(f => f.classList.remove('is-filled'));
+    if (!key) { msg.textContent = 'This form is not connected yet. ' + fallback; return; }
+    const done = () => { msg.textContent = 'Thank you. We will be in touch.'; cf.reset(); cf.querySelectorAll('.Field').forEach(f => f.classList.remove('is-filled')); };
+    if (cf.elements.botcheck.checked) { done(); return; }          // a bot ticked the hidden box: accept and send nothing
+    const type = val('f-type') || 'Enquiry', name = (val('f-first') + ' ' + val('f-last')).trim();
+    btn.disabled = true; msg.textContent = 'Sending…';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ access_key: key, subject: 'Makaron website: ' + type, from_name: 'Makaron website',
+          name: name || '(no name given)', email, enquiry_type: type, message: val('f-msg') || '(no message)' })
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.success) throw new Error(out.message || 'HTTP ' + res.status);
+      done();
+    } catch (err) {
+      msg.textContent = 'Sorry, your message could not be sent. ' + fallback;   // the form keeps what was typed
+    } finally { btn.disabled = false; }
   });
 
   /* ---- media slots: photos/videos fade in when their file exists, illustrations stay otherwise ---- */

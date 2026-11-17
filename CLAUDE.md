@@ -72,6 +72,7 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
   - `setNavTheme()`, which also syncs `theme-color`;
   - IntersectionObserver video play/pause (off-screen videos never autoplay);
   - journal filters, contact form, consent sheet.
+- **Contact form**: posts JSON to Web3Forms (`https://api.web3forms.com/submit`), which emails each message to the owner's inbox. The public access key is the form's `data-w3f-key` attribute; without it the form sends nothing and tells the visitor to email info@metrics34.co.uk.
 - **Consent gating**: add third-party tags as `<script type="text/plain" data-consent="analytics|marketing">`.
 - **Asset cache-busting**: `/assets/*` is cached for a year as `immutable`. When you replace a file, bump its `?v=N`.
 - **Structured data**: `tools/build.py` emits a JSON-LD `@graph` per route:
@@ -85,7 +86,6 @@ python3 tools/build.py --check  # exit 1 if anything is stale (writes nothing)
 
 ## Known gaps
 
-- The contact form posts to Web3Forms (`https://api.web3forms.com/submit`) using the public access key in the form's `data-w3f-key` attribute. The key is still empty: until it is filled in, the form sends nothing and tells the visitor to email info@metrics34.co.uk.
 - The shop buttons read "Register interest" for now and link to `/contact/`. There is no cart or checkout.
 - Legal pages contain placeholders: `[GB 000 0000 00]` (VAT number), `[two years]`, `[90 days]`.
 - No analytics are installed.

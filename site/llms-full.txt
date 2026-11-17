@@ -643,7 +643,7 @@ Metrics34 UK Limited (company number 11149283) of 81 Turners Hill, Cheshunt, Wal
 
 ### 4. Who we share it with
 
-We share personal data only with the suppliers who help us run the business: our payment provider, the platform that hosts this website and sends our emails, and our accountants. Each is bound by contract to use the data only for the service they provide to us. We do not sell personal data.
+We share personal data only with the suppliers who help us run the business: our payment provider, the platform that hosts this website and sends our emails, Web3Forms (which delivers the messages sent through our contact form to our inbox), and our accountants. Each is bound by contract to use the data only for the service they provide to us. We do not sell personal data.
 
 Where a supplier is based outside the United Kingdom, we rely on safeguards recognised under UK data protection law, such as an adequacy decision or the International Data Transfer Agreement.
 

@@ -82,6 +82,8 @@ def load_products(src):
     products = []
     for m in re.finditer(r'<article class="Shop-item.*?</article>', src, re.S):
         block = m.group(0)
+        if re.match(r'<article[^>]*\shidden[\s>]', block):   # a card hidden on the page is not on sale
+            continue
         img = re.search(r'<img[^>]*src="([^"?]+)[^"]*"[^>]*alt="([^"]*)"', block)
         products.append({
             'name': text(re.search(r'<h3 class="Shop-name">(.*?)</h3>', block).group(1)),
